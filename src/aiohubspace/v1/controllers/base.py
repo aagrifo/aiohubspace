@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import time
 from asyncio.coroutines import iscoroutinefunction
 from dataclasses import dataclass, fields
@@ -6,6 +7,7 @@ from typing import TYPE_CHECKING, Callable, Generic, Iterator, TypeVar
 
 from .. import v1_const
 from ..device import HubspaceDevice, get_hs_device
+from ..errors import DeviceNotFound, ExceededMaximumRetries
 from ..models.resource import ResourceTypes
 from .event import EventCallBackType, EventType, HubSpaceEvent
 
@@ -193,7 +195,6 @@ class BaseResourcesController(Generic[HubSpaceResource]):
         :param device_id: HubSpace Device ID
         :param obj_in: HubSpace Resource elements to change
         """
-        url = v1_const.HUBSPACE_DEVICE_STATE.format(self._bridge.account_id, device_id)
         cur_item = self._items.get(device_id)
         if cur_item is None:
             return
@@ -201,23 +202,42 @@ class BaseResourcesController(Generic[HubSpaceResource]):
         if not hs_states:
             self._logger.debug("No states to send. Skipping")
             return
+        # Make a clone if the update fails
+        fallback = copy.deepcopy(cur_item)
         # Update the state of the item to match the new states
-        # @TODO - Implement a fallback if the state update fails
         update_dataclass(cur_item, obj_in)
+        # If the update fails, restore the old states
+        fallback_required: bool = False
         # @TODO - Implement bluetooth logic for update
         if True:
+            url = v1_const.HUBSPACE_DEVICE_STATE.format(
+                self._bridge.account_id, str(device_id)
+            )
             headers = {
                 "host": v1_const.HUBSPACE_DATA_HOST,
                 "content-type": "application/json; charset=utf-8",
             }
             payload = {"metadeviceId": str(device_id), "values": hs_states}
-            await self._bridge.request("put", url, json=payload, headers=headers)
+            try:
+                res = await self._bridge.request(
+                    "put", url, json=payload, headers=headers
+                )
+            except ExceededMaximumRetries:
+                fallback_required = True
+            else:
+                # Bad states provided
+                if res.status == 400:
+                    self._logger.warning(
+                        "Invalid update provided for %s using %s", device_id, hs_states
+                    )
+                    fallback_required = True
+        if fallback_required:
+            self._items[device_id] = fallback
 
     def get_device(self, device_id) -> HubSpaceResource:
         cur_item = self._items.get(device_id)
         if cur_item is None:
-            self._logger.warning("received update for unknown item %s", device_id)
-            return
+            raise DeviceNotFound(device_id)
         return cur_item
 
 
@@ -244,6 +264,8 @@ def dataclass_to_hs(
     for f in fields(cls):
         cur_val = getattr(cls, f.name, None)
         if cur_val is None:
+            continue
+        if cur_val == getattr(elem, f.name, None):
             continue
         hs_key = mapping.get(f.name, f.name)
         new_val = cur_val.hs_value

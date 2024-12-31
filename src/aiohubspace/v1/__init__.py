@@ -1,5 +1,7 @@
 """Controls HubSpace devices on v1 API"""
 
+__all__ = ["HubSpaceBridgeV1", "InvalidAuth", "InvalidResponse", "HubspaceError"]
+
 import asyncio
 import copy
 import logging
@@ -8,6 +10,7 @@ from types import TracebackType
 from typing import Any, Callable, Generator, Optional
 
 import aiohttp
+from aiohttp import web_exceptions
 
 from . import v1_const
 from .auth import HubSpaceAuth
@@ -18,6 +21,7 @@ from .controllers.light import LightController
 from .controllers.lock import LockController
 from .controllers.switch import SwitchController
 from .controllers.valve import ValveController
+from .errors import ExceededMaximumRetries, HubspaceError, InvalidAuth, InvalidResponse
 
 
 class HubSpaceBridgeV1:
@@ -200,7 +204,9 @@ class HubSpaceBridgeV1:
         res = await self.request(
             "GET", v1_const.HUBSPACE_ACCOUNT_ID_URL, headers=headers
         )
-        return res.get("accountAccess")[0].get("account").get("accountId")
+        return (
+            (await res.json()).get("accountAccess")[0].get("account").get("accountId")
+        )
 
     async def initialize(self) -> None:
         """Query HubSpace API for all data"""
@@ -222,12 +228,13 @@ class HubSpaceBridgeV1:
             "host": v1_const.HUBSPACE_DATA_HOST,
         }
         params = {"expansions": "state"}
-        return await self.request(
+        res = await self.request(
             "get",
             v1_const.HUBSPACE_DATA_URL.format(self.account_id),
             headers=headers,
             params=params,
         )
+        return await res.json()
 
     @asynccontextmanager
     async def create_request(
@@ -256,7 +263,7 @@ class HubSpaceBridgeV1:
         async with self._web_session.request(method, url, **kwargs) as res:
             yield res
 
-    async def request(self, method: str, url: str, **kwargs) -> dict | list[dict]:
+    async def request(self, method: str, url: str, **kwargs) -> aiohttp.ClientResponse:
         """Make request on the api and return response data."""
         retries = 0
         self.logger.info("Making request [%s] to %s with %s", method, url, kwargs)
@@ -270,10 +277,12 @@ class HubSpaceBridgeV1:
                 # 429 means the bridge is rate limiting/overloaded, we should back off a bit.
                 if resp.status in [429, 503]:
                     continue
+                # 403 is bad auth
                 elif resp.status == 403:
-                    raise aiohttp.web_exceptions.HTTPForbidden()
-                else:
-                    return await resp.json()
+                    raise web_exceptions.HTTPForbidden()
+                await resp.read()
+                return resp
+        raise ExceededMaximumRetries("Exceeded maximum number of retries")
 
 
 def get_headers(**kwargs):

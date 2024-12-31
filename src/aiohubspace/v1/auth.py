@@ -1,4 +1,4 @@
-__all__ = ["HubSpaceAuth", "InvalidAuth", "InvalidResponse"]
+__all__ = ["HubSpaceAuth"]
 
 import asyncio
 import base64
@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlparse
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
+from .errors import InvalidAuth, InvalidResponse
 from .v1_const import HUBSPACE_DEFAULT_USERAGENT
 
 logger = logging.getLogger(__name__)
@@ -43,14 +44,6 @@ STATUS_CODE: Final[str] = "Status Code: %s"
 auth_challenge = namedtuple("AuthChallenge", ["challenge", "verifier"])
 token_data = namedtuple("TokenData", ["token", "expiration"])
 auth_sess_data = namedtuple("AuthSessionData", ["session_code", "execution", "tab_id"])
-
-
-class InvalidAuth(Exception):
-    pass
-
-
-class InvalidResponse(Exception):
-    pass
 
 
 class HubSpaceAuth:
@@ -179,15 +172,15 @@ class HubSpaceAuth:
         ) as response:
             logger.debug(STATUS_CODE, response.status)
             if response.status != 302:
-                raise InvalidResponse(
-                    f"Unable to process the result from {response.url}: {response.status}"
+                raise InvalidAuth(
+                    "Unable to authenticate with the supplied username / password"
                 )
             try:
                 parsed_url = urlparse(response.headers["location"])
                 code = parse_qs(parsed_url.query)["code"][0]
             except KeyError:
-                raise InvalidAuth(
-                    "Unable to authenticate with the supplied username / password"
+                raise InvalidResponse(
+                    f"Unable to process the result from {response.url}: {response.status}"
                 )
             logger.debug("Location: %s", response.headers.get("location"))
             logger.debug("Code: %s", code)

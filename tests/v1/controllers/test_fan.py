@@ -44,6 +44,8 @@ async def test_initialize_zandra(mocked_controller):
 async def test_turn_on(mocked_controller):
     await mocked_controller.initialize_elem(zandra_fan)
     assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = False
     await mocked_controller.turn_on(zandra_fan.id)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == zandra_fan.id
@@ -62,6 +64,9 @@ async def test_turn_on(mocked_controller):
 async def test_turn_off(mocked_controller):
     await mocked_controller.initialize_elem(zandra_fan)
     assert len(mocked_controller.items) == 1
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = True
     await mocked_controller.turn_off(zandra_fan.id)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == zandra_fan.id
@@ -91,8 +96,13 @@ async def test_turn_off(mocked_controller):
 async def test_set_speed(speed, expected_speed, mocked_controller):
     await mocked_controller.initialize_elem(zandra_fan)
     assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    if expected_speed:
+        dev.on.on = False
+    else:
+        dev.on.on = True
+    dev.speed.speed = "fan-speed-6-100"
     await mocked_controller.set_speed(zandra_fan.id, speed)
-
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == zandra_fan.id
     expected_states = [
@@ -136,7 +146,9 @@ async def test_set_direction(on, forward, value, mocked_controller, caplog):
     caplog.set_level(logging.DEBUG)
     await mocked_controller.initialize_elem(zandra_fan)
     assert len(mocked_controller.items) == 1
-    mocked_controller._items[zandra_fan.id].on.on = on
+    dev = mocked_controller.items[0]
+    dev.on.on = False
+    dev.direction.forward = not forward
     await mocked_controller.set_direction(zandra_fan.id, forward)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == zandra_fan.id
@@ -171,7 +183,9 @@ async def test_set_direction(on, forward, value, mocked_controller, caplog):
 async def test_set_preset(on, preset, value, mocked_controller):
     await mocked_controller.initialize_elem(zandra_fan)
     assert len(mocked_controller.items) == 1
-    mocked_controller._items[zandra_fan.id].on.on = on
+    dev = mocked_controller.items[0]
+    dev.on.on = True
+    dev.preset.enabled = not preset
     await mocked_controller.set_preset(zandra_fan.id, preset)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == zandra_fan.id
@@ -181,12 +195,6 @@ async def test_set_preset(on, preset, value, mocked_controller):
             "functionInstance": "comfort-breeze",
             "lastUpdateTime": 12345,
             "value": value,
-        },
-        {
-            "functionClass": "power",
-            "functionInstance": "fan-power",
-            "lastUpdateTime": 12345,
-            "value": "on",
         },
     ]
     utils.ensure_states_sent(mocked_controller, expected_states)

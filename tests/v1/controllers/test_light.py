@@ -224,6 +224,8 @@ async def test_initialize_zandra(mocked_controller):
 @pytest.mark.asyncio
 async def test_turn_on(mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
+    dev = mocked_controller.items[0]
+    dev.on.on = False
     await mocked_controller.turn_on(a21_light.id)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == a21_light.id
@@ -241,10 +243,11 @@ async def test_turn_on(mocked_controller):
 @pytest.mark.asyncio
 async def test_turn_on_zandra(mocked_controller):
     await mocked_controller.initialize_elem(zandra_light)
+    dev = mocked_controller.items[0]
+    dev.on.on = False
     await mocked_controller.turn_on(zandra_light.id)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == zandra_light.id
-    print(mocked_controller.items)
     expected_states = [
         {
             "functionClass": "power",
@@ -259,6 +262,8 @@ async def test_turn_on_zandra(mocked_controller):
 @pytest.mark.asyncio
 async def test_turn_off(mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
+    dev = mocked_controller.items[0]
+    dev.on.on = True
     await mocked_controller.turn_off(a21_light.id)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == a21_light.id
@@ -276,6 +281,11 @@ async def test_turn_off(mocked_controller):
 @pytest.mark.asyncio
 async def test_set_color_temperature(mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = False
+    dev.color_temperature.temperature = 2700
+    dev.color_mode.mode = "color"
     await mocked_controller.set_color_temperature(a21_light.id, 3475)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == a21_light.id
@@ -305,6 +315,10 @@ async def test_set_color_temperature(mocked_controller):
 @pytest.mark.asyncio
 async def test_set_brightness(mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = False
+    dev.dimming.brightness = 50
     await mocked_controller.set_brightness(a21_light.id, 60)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == a21_light.id
@@ -328,6 +342,13 @@ async def test_set_brightness(mocked_controller):
 @pytest.mark.asyncio
 async def test_set_rgb(mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = False
+    dev.color_mode.mode = "white"
+    dev.color.red = 100
+    dev.color.green = 100
+    dev.color.blue = 100
     await mocked_controller.set_rgb(a21_light.id, 0, 20, 40)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == a21_light.id
@@ -370,6 +391,10 @@ async def test_set_rgb(mocked_controller):
 )
 async def test_set_effect(effect, expected_instance, mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = False
+    dev.effect.effect = None
     await mocked_controller.set_effect(a21_light.id, effect)
     req = utils.get_json_call(mocked_controller)
     assert req["metadeviceId"] == a21_light.id
