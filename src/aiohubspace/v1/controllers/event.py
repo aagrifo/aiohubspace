@@ -115,8 +115,8 @@ class EventStream:
         """
         if not isinstance(event_filter, NoneType | tuple):
             event_filter = (event_filter,)
-        # if not isinstance(resource_filter, NoneType | tuple):
-        #     resource_filter = (resource_filter,)
+        if not isinstance(resource_filter, NoneType | tuple):
+            resource_filter = (resource_filter,)
         subscription = (callback, event_filter, resource_filter)
 
         def unsubscribe():
@@ -135,7 +135,10 @@ class EventStream:
                     if (
                         "device" in data
                         and data["device"]
-                        and data["device"].device_class not in resource_filter
+                        and not any(
+                            data["device"].device_class not in res_filter
+                            for res_filter in resource_filter
+                        )
                     ):
                         continue
             if iscoroutinefunction(callback):

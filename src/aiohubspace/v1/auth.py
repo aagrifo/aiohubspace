@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlparse
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
-from .errors import InvalidAuth, InvalidResponse
+from ..errors import InvalidAuth, InvalidResponse
 from .v1_const import HUBSPACE_DEFAULT_USERAGENT
 
 logger = logging.getLogger(__name__)

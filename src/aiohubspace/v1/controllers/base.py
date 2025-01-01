@@ -5,9 +5,10 @@ from asyncio.coroutines import iscoroutinefunction
 from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Callable, Generic, Iterator, TypeVar
 
+from aiohubspace.errors import DeviceNotFound, ExceededMaximumRetries
+
 from .. import v1_const
 from ..device import HubspaceDevice, get_hs_device
-from ..errors import DeviceNotFound, ExceededMaximumRetries
 from ..models.resource import ResourceTypes
 from .event import EventCallBackType, EventType, HubSpaceEvent
 
@@ -76,7 +77,10 @@ class BaseResourcesController(Generic[HubSpaceResource]):
             cur_item = self._items.pop(item_id, evt_data)
         elif evt_type == EventType.RESOURCE_UPDATED:
             # existing item updated
-            cur_item = self.get_device(item_id)
+            try:
+                cur_item = self.get_device(item_id)
+            except DeviceNotFound:
+                cur_item = None
             if cur_item is None:
                 return
             # @TODO - Check for changes rather than issuing a full update for everything each time

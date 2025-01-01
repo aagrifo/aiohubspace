@@ -17,6 +17,7 @@ class ResourceTypes(Enum):
     LANDSCAPE_TRANSFORMER = "landscape-transformer"
     LIGHT = "light"
     LOCK = "lock"
+    PARENT_DEVICE = "parent-device"
     POWER_OUTLET = "power-outlet"
     SWITCH = "switch"
     UNKNOWN = "unknown"

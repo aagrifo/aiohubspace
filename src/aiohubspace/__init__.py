@@ -1,4 +1,4 @@
-__all__ = ["HubSpaceBridgeV1"]
+__all__ = ["HubSpaceBridgeV1", "HubspaceError", "InvalidAuth", "InvalidResponse"]
 
 
 from importlib.metadata import PackageNotFoundError, version
@@ -13,4 +13,5 @@ finally:
     del version, PackageNotFoundError
 
 
+from .errors import HubspaceError, InvalidAuth, InvalidResponse
 from .v1 import HubSpaceBridgeV1

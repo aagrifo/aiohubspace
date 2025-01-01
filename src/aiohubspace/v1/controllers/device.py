@@ -1,7 +1,7 @@
 """Controller that holds top-level devices"""
 
 from ..device import HubspaceDevice, get_hs_device
-from ..models import device
+from ..models import device, sensor
 from ..models.resource import DeviceInformation, ResourceTypes
 from .base import BaseResourcesController
 
@@ -17,13 +17,21 @@ class DeviceController(BaseResourcesController[device.Device]):
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
+        sensors: dict[str, sensor.HubSpaceSensor] = {}
         for state in hs_device.states:
             if state.functionClass == "available":
                 available = state.value
+            elif state.functionClass in sensor.MAPPED_SENSORS:
+                sensors[state.functionClass] = sensor.HubSpaceSensor(
+                    id=state.functionClass,
+                    owner=hs_device.device_id,
+                    value=state.value,
+                )
 
         self._items[hs_device.id] = device.Device(
             id=hs_device.id,
             available=available,
+            sensors=sensors,
             device_information=DeviceInformation(
                 device_class=hs_device.device_class,
                 default_image=hs_device.default_image,
@@ -50,3 +58,11 @@ class DeviceController(BaseResourcesController[device.Device]):
             if device.device_id not in parents or device.children:
                 parents[device.device_id] = device
         return list(parents.values())
+
+    async def update_elem(self, hs_device: HubspaceDevice) -> None:
+        cur_item = self.get_device(hs_device.id)
+        for state in hs_device.states:
+            if state.functionClass == "available":
+                cur_item.available = state.value
+            elif state.functionClass in sensor.MAPPED_SENSORS:
+                cur_item.sensors[state.functionClass].value = state.value

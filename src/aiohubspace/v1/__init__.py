@@ -12,6 +12,7 @@ from typing import Any, Callable, Generator, Optional
 import aiohttp
 from aiohttp import web_exceptions
 
+from ..errors import ExceededMaximumRetries, HubspaceError, InvalidAuth, InvalidResponse
 from . import v1_const
 from .auth import HubSpaceAuth
 from .controllers.device import DeviceController
@@ -21,7 +22,6 @@ from .controllers.light import LightController
 from .controllers.lock import LockController
 from .controllers.switch import SwitchController
 from .controllers.valve import ValveController
-from .errors import ExceededMaximumRetries, HubspaceError, InvalidAuth, InvalidResponse
 
 
 class HubSpaceBridgeV1:
