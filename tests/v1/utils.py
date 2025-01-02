@@ -2,7 +2,7 @@ import json
 import os
 from typing import Any
 
-from aiohubspace.v1.device import HubspaceDevice, HubSpaceState
+from aiohubspace.v1.device import HubspaceDevice, HubspaceState
 
 current_path: str = os.path.dirname(os.path.realpath(__file__))
 
@@ -31,7 +31,7 @@ def create_devices_from_data(file_name: str) -> list[HubspaceDevice]:
 def create_device_from_data(device: dict) -> HubspaceDevice:
     processed_states = []
     for state in device["states"]:
-        processed_states.append(HubSpaceState(**state))
+        processed_states.append(HubspaceState(**state))
     device["states"] = processed_states
     if "children" not in device:
         device["children"] = []

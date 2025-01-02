@@ -10,10 +10,10 @@ from aiohubspace.errors import DeviceNotFound, ExceededMaximumRetries
 from .. import v1_const
 from ..device import HubspaceDevice, get_hs_device
 from ..models.resource import ResourceTypes
-from .event import EventCallBackType, EventType, HubSpaceEvent
+from .event import EventCallBackType, EventType, HubspaceEvent
 
 if TYPE_CHECKING:
-    from .. import HubSpaceBridgeV1
+    from .. import HubspaceBridgeV1
 
 
 EventSubscriptionType = tuple[
@@ -23,31 +23,31 @@ EventSubscriptionType = tuple[
 
 ID_FILTER_ALL = "*"
 
-HubSpaceResource = TypeVar("HubSpaceResource")
+HubspaceResource = TypeVar("HubspaceResource")
 
 
-class BaseResourcesController(Generic[HubSpaceResource]):
-    """Base Controller for HubSpace devices"""
+class BaseResourcesController(Generic[HubspaceResource]):
+    """Base Controller for Hubspace devices"""
 
     ITEM_TYPE_ID: ResourceTypes | None = None
     ITEM_TYPES: list[ResourceTypes] | None = None
     ITEM_CLS = None
     ITEM_MAPPING: dict = {}
 
-    def __init__(self, bridge: "HubSpaceBridgeV1") -> None:
+    def __init__(self, bridge: "HubspaceBridgeV1") -> None:
         """Initialize instance."""
         self._bridge = bridge
-        self._items: dict[str, HubSpaceResource] = {}
+        self._items: dict[str, HubspaceResource] = {}
         self._logger = bridge.logger.getChild(self.ITEM_CLS.__name__)
         self._subscribers: dict[str, EventSubscriptionType] = {ID_FILTER_ALL: []}
         self._initialized: bool = False
         self._item_values = [x.value for x in self.ITEM_TYPES]
 
-    def __getitem__(self, device_id: str) -> HubSpaceResource:
+    def __getitem__(self, device_id: str) -> HubspaceResource:
         """Get item by device_id."""
         return self._items[device_id]
 
-    def __iter__(self) -> Iterator[HubSpaceResource]:
+    def __iter__(self) -> Iterator[HubspaceResource]:
         """Iterate items."""
         return iter(self._items.values())
 
@@ -56,7 +56,7 @@ class BaseResourcesController(Generic[HubSpaceResource]):
         return device_id in self._items
 
     @property
-    def items(self) -> list[HubSpaceResource]:
+    def items(self) -> list[HubspaceResource]:
         """Return all items for this resource."""
         return list(self._items.values())
 
@@ -65,7 +65,7 @@ class BaseResourcesController(Generic[HubSpaceResource]):
         return self._initialized
 
     async def _handle_event(
-        self, evt_type: EventType, evt_data: HubSpaceEvent | None
+        self, evt_type: EventType, evt_data: HubspaceEvent | None
     ) -> None:
         """Handle incoming event for this resource"""
         if evt_data is None:
@@ -129,7 +129,7 @@ class BaseResourcesController(Generic[HubSpaceResource]):
         for item in valid_devices:
             await self._handle_event(
                 EventType.RESOURCE_ADDED,
-                HubSpaceEvent(
+                HubspaceEvent(
                     type=EventType.RESOURCE_ADDED,
                     device_id=item.device_id,
                     device=item,
@@ -192,12 +192,12 @@ class BaseResourcesController(Generic[HubSpaceResource]):
     async def update(
         self,
         device_id: str,
-        obj_in: Generic[HubSpaceResource],
+        obj_in: Generic[HubspaceResource],
     ) -> None:
-        """Update HubSpace with the new data
+        """Update Hubspace with the new data
 
-        :param device_id: HubSpace Device ID
-        :param obj_in: HubSpace Resource elements to change
+        :param device_id: Hubspace Device ID
+        :param obj_in: Hubspace Resource elements to change
         """
         cur_item = self._items.get(device_id)
         if cur_item is None:
@@ -238,14 +238,14 @@ class BaseResourcesController(Generic[HubSpaceResource]):
         if fallback_required:
             self._items[device_id] = fallback
 
-    def get_device(self, device_id) -> HubSpaceResource:
+    def get_device(self, device_id) -> HubspaceResource:
         cur_item = self._items.get(device_id)
         if cur_item is None:
             raise DeviceNotFound(device_id)
         return cur_item
 
 
-def update_dataclass(elem: HubSpaceResource, cls: dataclass):
+def update_dataclass(elem: HubspaceResource, cls: dataclass):
     """Updates the element with the latest changes"""
     for f in fields(cls):
         cur_val = getattr(cls, f.name, None)
@@ -261,9 +261,9 @@ def update_dataclass(elem: HubSpaceResource, cls: dataclass):
 
 
 def dataclass_to_hs(
-    elem: HubSpaceResource, cls: dataclass, mapping: dict
+    elem: HubspaceResource, cls: dataclass, mapping: dict
 ) -> list[dict]:
-    """Convert the current state to be consumed by HubSpace"""
+    """Convert the current state to be consumed by Hubspace"""
     states = []
     for f in fields(cls):
         cur_val = getattr(cls, f.name, None)

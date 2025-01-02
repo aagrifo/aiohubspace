@@ -3,7 +3,7 @@
 import pytest
 
 from aiohubspace.v1.controllers.light import LightController, features
-from aiohubspace.v1.device import HubSpaceState
+from aiohubspace.v1.device import HubspaceState
 
 from .. import utils
 
@@ -447,7 +447,7 @@ async def test_update_elem(mocked_controller):
     assert len(mocked_controller.items) == 1
     dev_update = utils.create_devices_from_data("light-a21.json")[0]
     new_states = [
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "color-temperature",
                 "value": 3000,
@@ -455,7 +455,7 @@ async def test_update_elem(mocked_controller):
                 "functionInstance": None,
             }
         ),
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "brightness",
                 "value": 40,
@@ -463,7 +463,7 @@ async def test_update_elem(mocked_controller):
                 "functionInstance": None,
             }
         ),
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "color-rgb",
                 "value": {
@@ -477,7 +477,7 @@ async def test_update_elem(mocked_controller):
                 "functionInstance": None,
             }
         ),
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "power",
                 "value": "on",
@@ -485,7 +485,7 @@ async def test_update_elem(mocked_controller):
                 "functionInstance": None,
             }
         ),
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "color-mode",
                 "value": "color",
@@ -508,7 +508,7 @@ async def test_update_elem(mocked_controller):
 
 
 states_custom = [
-    HubSpaceState(
+    HubspaceState(
         **{
             "functionClass": "color-sequence",
             "functionInstance": "preset",
@@ -516,7 +516,7 @@ states_custom = [
             "value": "custom",
         }
     ),
-    HubSpaceState(
+    HubspaceState(
         **{
             "functionClass": "color-sequence",
             "functionInstance": "custom",
@@ -527,7 +527,7 @@ states_custom = [
 ]
 
 states_preset = [
-    HubSpaceState(
+    HubspaceState(
         **{
             "functionClass": "color-sequence",
             "functionInstance": "preset",
@@ -535,7 +535,7 @@ states_preset = [
             "value": "fade-7",
         }
     ),
-    HubSpaceState(
+    HubspaceState(
         **{
             "functionClass": "color-sequence",
             "functionInstance": "custom",

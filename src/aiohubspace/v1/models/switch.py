@@ -6,9 +6,9 @@ from .resource import DeviceInformation, ResourceTypes
 
 @dataclass
 class Switch:
-    """Representation of a HubSpace Switch"""
+    """Representation of a Hubspace Switch"""
 
-    id: str  # ID used when interacting with HubSpace
+    id: str  # ID used when interacting with Hubspace
     available: bool
 
     on: dict[str, features.OnFeature]

@@ -2,7 +2,7 @@ import pytest
 
 from aiohubspace.v1.controllers.device import DeviceController
 from aiohubspace.v1.models.resource import DeviceInformation
-from aiohubspace.v1.models.sensor import HubSpaceSensor
+from aiohubspace.v1.models.sensor import HubspaceSensor
 
 from .. import utils
 
@@ -35,7 +35,7 @@ async def test_initialize_a21(mocked_controller):
         parent_id=a21_light.device_id,
     )
     assert dev.sensors == {
-        "wifi-rssi": HubSpaceSensor(
+        "wifi-rssi": HubspaceSensor(
             id="wifi-rssi",
             owner="30a2df8c-109b-42c2-aed6-a6b30c565f8f",
             value=-50,
@@ -62,7 +62,7 @@ async def test_initialize_binary_sensors(mocked_controller):
         parent_id=freezer.device_id,
     )
     assert dev.sensors == {
-        "wifi-rssi": HubSpaceSensor(
+        "wifi-rssi": HubspaceSensor(
             id="wifi-rssi",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
             value=-71,
@@ -70,25 +70,25 @@ async def test_initialize_binary_sensors(mocked_controller):
         )
     }
     assert dev.binary_sensors == {
-        "error|freezer-high-temperature-alert": HubSpaceSensor(
+        "error|freezer-high-temperature-alert": HubspaceSensor(
             id="error|freezer-high-temperature-alert",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
             value="normal",
             instance="freezer-high-temperature-alert",
         ),
-        "error|fridge-high-temperature-alert": HubSpaceSensor(
+        "error|fridge-high-temperature-alert": HubspaceSensor(
             id="error|fridge-high-temperature-alert",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
             value="alerting",
             instance="fridge-high-temperature-alert",
         ),
-        "error|mcu-communication-failure": HubSpaceSensor(
+        "error|mcu-communication-failure": HubspaceSensor(
             id="error|mcu-communication-failure",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
             value="normal",
             instance="mcu-communication-failure",
         ),
-        "error|temperature-sensor-failure": HubSpaceSensor(
+        "error|temperature-sensor-failure": HubspaceSensor(
             id="error|temperature-sensor-failure",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
             value="normal",

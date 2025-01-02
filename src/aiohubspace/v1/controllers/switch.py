@@ -1,4 +1,4 @@
-"""Controller holding and managing HubSpace resources of type `switch`."""
+"""Controller holding and managing Hubspace resources of type `switch`."""
 
 from ..device import HubspaceDevice
 from ..models import features, switch
@@ -7,7 +7,7 @@ from .base import BaseResourcesController
 
 
 class SwitchController(BaseResourcesController[switch.Switch]):
-    """Controller holding and managing HubSpace resources of type `switch`.
+    """Controller holding and managing Hubspace resources of type `switch`.
 
     A switch can have one or more toggleable elements. They are controlled
     by their functionInstance.

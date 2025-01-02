@@ -16,10 +16,10 @@ authors = [
 maintainers = [
   {name = "Chris Dohmen", email = "chris.dohmen11@gmail.com"}
 ]
-description = "Talk to the HubSpace API asynchronously"
+description = "Talk to the Hubspace API asynchronously"
 readme = "README.rst"
 license = {file = "LICENSE.txt"}
-keywords = ["HubSpace"]
+keywords = ["Hubspace"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",

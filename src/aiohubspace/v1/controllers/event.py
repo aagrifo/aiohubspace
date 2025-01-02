@@ -12,7 +12,7 @@ from aiohttp.client_exceptions import ClientError
 from ..device import HubspaceDevice, get_hs_device
 
 if TYPE_CHECKING:
-    from .. import HubSpaceBridgeV1
+    from .. import HubspaceBridgeV1
 
 
 class EventStreamStatus(Enum):
@@ -36,12 +36,12 @@ class EventType(Enum):
     RECONNECTED = "reconnected"
 
 
-class HubSpaceEvent(TypedDict):
+class HubspaceEvent(TypedDict):
     """Hue Event message as emitted by the EventStream."""
 
     type: EventType  # = EventType (add, update, delete)
     device_id: str  # ID for interacting with the device
-    device: NotRequired[HubspaceDevice]  # HubSpace Device
+    device: NotRequired[HubspaceDevice]  # Hubspace Device
 
 
 EventCallBackType = Callable[[EventType, dict | None], None]
@@ -55,7 +55,7 @@ EventSubscriptionType = tuple[
 class EventStream:
     """Holds the connection to the HUE Clip EventStream."""
 
-    def __init__(self, bridge: "HubSpaceBridgeV1", polling_interval: int) -> None:
+    def __init__(self, bridge: "HubspaceBridgeV1", polling_interval: int) -> None:
         """Initialize instance."""
         self._bridge = bridge
         self._listeners = set()
@@ -125,7 +125,7 @@ class EventStream:
         self._subscribers.append(subscription)
         return unsubscribe
 
-    def emit(self, event_type: EventType, data: HubSpaceEvent = None) -> None:
+    def emit(self, event_type: EventType, data: HubspaceEvent = None) -> None:
         """Emit event to all listeners."""
         for callback, event_filter, resource_filter in self._subscribers:
             if event_filter is not None and event_type not in event_filter:
@@ -164,7 +164,7 @@ class EventStream:
                         skipped_ids.append(hs_dev.id)
                         continue
                     self._event_queue.put_nowait(
-                        HubSpaceEvent(
+                        HubspaceEvent(
                             type=event_type,
                             device_id=hs_dev.id,
                             device=hs_dev,
@@ -182,7 +182,7 @@ class EventStream:
                 for dev_id in self._bridge.tracked_devices:
                     if dev_id not in processed_ids + skipped_ids:
                         self._event_queue.put_nowait(
-                            HubSpaceEvent(
+                            HubspaceEvent(
                                 type=EventType.RESOURCE_DELETED, device_id=dev_id
                             )
                         )
@@ -193,5 +193,5 @@ class EventStream:
     async def __event_processor(self) -> None:
         """Process the hubspace devices"""
         while True:
-            event: HubSpaceEvent = await self._event_queue.get()
+            event: HubspaceEvent = await self._event_queue.get()
             self.emit(event["type"], event)

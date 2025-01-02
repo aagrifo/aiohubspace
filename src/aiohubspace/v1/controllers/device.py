@@ -17,20 +17,20 @@ class DeviceController(BaseResourcesController[device.Device]):
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
-        sensors: dict[str, sensor.HubSpaceSensor] = {}
-        binary_sensors: dict[str, sensor.HubSpaceSensor] = {}
+        sensors: dict[str, sensor.HubspaceSensor] = {}
+        binary_sensors: dict[str, sensor.HubspaceSensor] = {}
         for state in hs_device.states:
             if state.functionClass == "available":
                 available = state.value
             elif state.functionClass in sensor.MAPPED_SENSORS:
-                sensors[state.functionClass] = sensor.HubSpaceSensor(
+                sensors[state.functionClass] = sensor.HubspaceSensor(
                     id=state.functionClass,
                     owner=hs_device.device_id,
                     value=state.value,
                 )
             elif state.functionClass in sensor.BINARY_SENSORS:
                 key = f"{state.functionClass}|{state.functionInstance}"
-                binary_sensors[key] = sensor.HubSpaceSensor(
+                binary_sensors[key] = sensor.HubspaceSensor(
                     id=key,
                     owner=hs_device.device_id,
                     value=state.value,

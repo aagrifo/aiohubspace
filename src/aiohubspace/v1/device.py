@@ -1,6 +1,6 @@
 __all__ = [
     "HubspaceDevice",
-    "HubSpaceState",
+    "HubspaceState",
     "get_hs_device",
 ]
 import logging
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class HubSpaceState:
+class HubspaceState:
     """State of a given function
 
     :param functionClass: Function class for the state (ie, power)
@@ -37,7 +37,7 @@ class HubspaceDevice:
     default_image: str
     friendly_name: str
     functions: list[dict] = field(default=list)
-    states: list[HubSpaceState] = field(default=list)
+    states: list[HubspaceState] = field(default=list)
     children: list[str] = field(default=list)
     manufacturerName: Optional[str] = field(default=None)
 
@@ -78,13 +78,13 @@ class HubspaceDevice:
 
 
 def get_hs_device(hs_device: dict[str, Any]) -> HubspaceDevice:
-    """Convert the HubSpace device definition into a HubSpaceDevice"""
+    """Convert the Hubspace device definition into a HubspaceDevice"""
     description = hs_device.get("description", {})
     device = description.get("device", {})
-    processed_states: list[HubSpaceState] = []
+    processed_states: list[HubspaceState] = []
     for state in hs_device.get("state", {}).get("values", []):
         processed_states.append(
-            HubSpaceState(
+            HubspaceState(
                 functionClass=state.get("functionClass"),
                 value=state.get("value"),
                 lastUpdateTime=state.get("lastUpdateTime"),

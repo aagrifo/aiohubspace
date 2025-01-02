@@ -3,7 +3,7 @@
 import pytest
 
 from aiohubspace.v1.controllers.valve import ValveController, features
-from aiohubspace.v1.device import HubSpaceState
+from aiohubspace.v1.device import HubspaceState
 
 from .. import utils
 
@@ -94,7 +94,7 @@ async def test_update_elem(mocked_controller):
     assert len(mocked_controller.items) == 1
     dev_update = utils.create_devices_from_data("water-timer.json")[0]
     new_states = [
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "toggle",
                 "value": "on",
@@ -102,7 +102,7 @@ async def test_update_elem(mocked_controller):
                 "functionInstance": "spigot-1",
             }
         ),
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "toggle",
                 "value": "off",

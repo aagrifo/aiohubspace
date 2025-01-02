@@ -11,7 +11,7 @@ BINARY_SENSORS = ["error"]
 
 
 @dataclass
-class HubSpaceSensor:
+class HubspaceSensor:
     id: str
     owner: str
     value: str | int | float | None

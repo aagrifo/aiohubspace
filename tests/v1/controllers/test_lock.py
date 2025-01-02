@@ -3,7 +3,7 @@
 import pytest
 
 from aiohubspace.v1.controllers.lock import LockController, features
-from aiohubspace.v1.device import HubSpaceState
+from aiohubspace.v1.device import HubspaceState
 
 from .. import utils
 
@@ -78,7 +78,7 @@ async def test_update_elem(value, expected, mocked_controller):
     assert len(mocked_controller.items) == 1
     dev_update = utils.create_devices_from_data("door-lock-TBD.json")[0]
     new_states = [
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "lock-control",
                 "value": value,

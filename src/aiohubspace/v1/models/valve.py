@@ -6,9 +6,9 @@ from .resource import DeviceInformation, ResourceTypes
 
 @dataclass
 class Valve:
-    """Representation of a HubSpace Valve"""
+    """Representation of a Hubspace Valve"""
 
-    id: str  # ID used when interacting with HubSpace
+    id: str  # ID used when interacting with Hubspace
     available: bool
 
     open: dict[str, features.OpenFeature]

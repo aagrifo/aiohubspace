@@ -1,4 +1,4 @@
-"""Controller holding and managing HubSpace resources of type `valve`."""
+"""Controller holding and managing Hubspace resources of type `valve`."""
 
 from ..device import HubspaceDevice
 from ..models import features, valve
@@ -7,7 +7,7 @@ from .base import BaseResourcesController
 
 
 class ValveController(BaseResourcesController[valve.Valve]):
-    """Controller holding and managing HubSpace resources of type `valve`.
+    """Controller holding and managing Hubspace resources of type `valve`.
 
     A valve can have one or more toggleable elements. They are controlled
     by their functionInstance.
@@ -19,11 +19,11 @@ class ValveController(BaseResourcesController[valve.Valve]):
     ITEM_MAPPING = {}
 
     async def turn_on(self, device_id: str, instance: str | None = None) -> None:
-        """Turn on the switch."""
+        """Open the valve"""
         await self.set_state(device_id, valve_open=True, instance=instance)
 
     async def turn_off(self, device_id: str, instance: str | None = None) -> None:
-        """Turn off the switch."""
+        """Close the valve"""
         await self.set_state(device_id, valve_open=False, instance=instance)
 
     async def initialize_elem(self, hs_device: HubspaceDevice) -> None:

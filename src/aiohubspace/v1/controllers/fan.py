@@ -1,4 +1,4 @@
-"""Controller holding and managing HubSpace resources of type `fan`."""
+"""Controller holding and managing Hubspace resources of type `fan`."""
 
 from .. import device
 from ..device import HubspaceDevice
@@ -9,7 +9,7 @@ from .base import BaseResourcesController
 
 
 class FanController(BaseResourcesController[fan.Fan]):
-    """Controller holding and managing HubSpace resources of type `fan`."""
+    """Controller holding and managing Hubspace resources of type `fan`."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = [ResourceTypes.FAN]
@@ -36,7 +36,7 @@ class FanController(BaseResourcesController[fan.Fan]):
         """Set the direction of the fan to forward."""
         cur_item = self.get_device(device_id)
         if not cur_item.is_on:
-            # Thanks HubSpace for this one! Additionally, turning it on and setting
+            # Thanks Hubspace for this one! Additionally, turning it on and setting
             # direction at the same time does not work as expected
             self._logger.info("Fan is not running so direction will not be set")
         await self.set_state(device_id, forward=forward)

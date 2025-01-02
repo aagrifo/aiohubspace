@@ -1,6 +1,6 @@
-"""Controls HubSpace devices on v1 API"""
+"""Controls Hubspace devices on v1 API"""
 
-__all__ = ["HubSpaceBridgeV1", "InvalidAuth", "InvalidResponse", "HubspaceError"]
+__all__ = ["HubspaceBridgeV1", "InvalidAuth", "InvalidResponse", "HubspaceError"]
 
 import asyncio
 import copy
@@ -14,7 +14,7 @@ from aiohttp import web_exceptions
 
 from ..errors import ExceededMaximumRetries, HubspaceError, InvalidAuth, InvalidResponse
 from . import v1_const
-from .auth import HubSpaceAuth
+from .auth import HubspaceAuth
 from .controllers.device import DeviceController
 from .controllers.event import EventCallBackType, EventStream
 from .controllers.fan import FanController
@@ -24,8 +24,8 @@ from .controllers.switch import SwitchController
 from .controllers.valve import ValveController
 
 
-class HubSpaceBridgeV1:
-    """Controls HubSpace devices on v1 API"""
+class HubspaceBridgeV1:
+    """Controls Hubspace devices on v1 API"""
 
     _web_session: Optional[aiohttp.ClientSession] = None
 
@@ -38,7 +38,7 @@ class HubSpaceBridgeV1:
     ):
         self._web_session: aiohttp.ClientSession = session
         self._account_id: Optional[str] = None
-        self._auth = HubSpaceAuth(username, password)
+        self._auth = HubspaceAuth(username, password)
         self.logger = logging.getLogger(f"{__package__}[{username}]")
         self.logger.addHandler(logging.StreamHandler())
         self.logger.setLevel(logging.DEBUG)
@@ -56,7 +56,7 @@ class HubSpaceBridgeV1:
         self._switches: SwitchController = SwitchController(self)
         self._valves: ValveController = ValveController(self)
 
-    async def __aenter__(self) -> "HubSpaceBridgeV1":
+    async def __aenter__(self) -> "HubspaceBridgeV1":
         """Return Context manager."""
         await self.initialize()
         return self
@@ -154,7 +154,7 @@ class HubSpaceBridgeV1:
 
     @property
     def account_id(self) -> str:
-        """Get the account ID for the HubSpace account"""
+        """Get the account ID for the Hubspace account"""
         return self._account_id
 
     def set_polling_interval(self, polling_interval: int) -> None:
@@ -199,7 +199,7 @@ class HubSpaceBridgeV1:
         )
 
     async def initialize(self) -> None:
-        """Query HubSpace API for all data"""
+        """Query Hubspace API for all data"""
         self._account_id = await self.get_account_id()
         hs_data = await self.fetch_data()
         await asyncio.gather(

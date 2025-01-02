@@ -1,4 +1,4 @@
-__all__ = ["HubSpaceAuth"]
+__all__ = ["HubspaceAuth"]
 
 import asyncio
 import base64
@@ -46,10 +46,10 @@ token_data = namedtuple("TokenData", ["token", "expiration"])
 auth_sess_data = namedtuple("AuthSessionData", ["session_code", "execution", "tab_id"])
 
 
-class HubSpaceAuth:
-    """Authentication against the HubSpace API
+class HubspaceAuth:
+    """Authentication against the Hubspace API
 
-    This class follows the HubSpace authentication workflow and utilizes
+    This class follows the Hubspace authentication workflow and utilizes
     refresh tokens.
     """
 
@@ -131,7 +131,7 @@ class HubSpaceAuth:
     async def generate_code(
         self, session_code: str, execution: str, tab_id: str, client: ClientSession
     ) -> str:
-        """Finalize login to HubSpace page
+        """Finalize login to Hubspace page
 
         :param session_code: Session code during form interaction
         :param execution: Session code during form interaction
@@ -233,7 +233,7 @@ class HubSpaceAuth:
         :return: Refresh token for the auth
         """
         logger.debug("Refresh token not present. Generating a new refresh token")
-        challenge = await HubSpaceAuth.generate_challenge_data()
+        challenge = await HubspaceAuth.generate_challenge_data()
         code: str = await self.webapp_login(challenge, client)
         logger.debug("Successfully generated an auth code")
         refresh_token = await self.generate_refresh_token(code, challenge, client)

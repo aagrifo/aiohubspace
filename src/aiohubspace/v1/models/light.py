@@ -6,10 +6,10 @@ from .resource import DeviceInformation, ResourceTypes
 
 
 @dataclass
-class Light[HubSpaceResource]:
-    """Representation of a HubSpace Light"""
+class Light[HubspaceResource]:
+    """Representation of a Hubspace Light"""
 
-    id: str  # ID used when interacting with HubSpace
+    id: str  # ID used when interacting with Hubspace
     available: bool
 
     on: features.OnFeature
@@ -81,7 +81,7 @@ class Light[HubSpaceResource]:
 
 
 @dataclass
-class LightPut[HubSpaceResource]:
+class LightPut[HubspaceResource]:
     """States that can be updated for a light"""
 
     on: features.OnFeature | None = None

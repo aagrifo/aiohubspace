@@ -1,4 +1,4 @@
-"""Controller holding and managing HubSpace resources of type `lock`."""
+"""Controller holding and managing Hubspace resources of type `lock`."""
 
 from ..device import HubspaceDevice
 from ..models import features, lock
@@ -7,7 +7,7 @@ from .base import BaseResourcesController
 
 
 class LockController(BaseResourcesController[lock.Lock]):
-    """Controller holding and managing HubSpace resources of type `lock`."""
+    """Controller holding and managing Hubspace resources of type `lock`."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = [ResourceTypes.LOCK]

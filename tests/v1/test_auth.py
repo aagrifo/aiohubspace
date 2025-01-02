@@ -15,7 +15,7 @@ current_path = pathlib.Path(__file__).parent.resolve()
 
 @pytest.fixture(scope="function")
 def hs_auth():
-    return auth.HubSpaceAuth("username", "password")
+    return auth.HubspaceAuth("username", "password")
 
 
 @pytest_asyncio.fixture(scope="function")

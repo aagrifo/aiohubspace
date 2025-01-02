@@ -1,9 +1,9 @@
-"""Controller holding and managing HubSpace resources of type `light`."""
+"""Controller holding and managing Hubspace resources of type `light`."""
 
 from contextlib import suppress
 
 from .. import device
-from ..device import HubspaceDevice, HubSpaceState
+from ..device import HubspaceDevice, HubspaceState
 from ..models import features, light
 from ..models.resource import DeviceInformation, ResourceTypes
 from ..util import process_names, process_range
@@ -11,7 +11,7 @@ from .base import BaseResourcesController
 
 
 class LightController(BaseResourcesController[light.Light]):
-    """Controller holding and managing HubSpace resources of type `light`."""
+    """Controller holding and managing Hubspace resources of type `light`."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = [ResourceTypes.LIGHT]
@@ -127,7 +127,7 @@ class LightController(BaseResourcesController[light.Light]):
 
     async def update_elem(self, hs_device: HubspaceDevice) -> None:
         cur_item = self.get_device(hs_device.id)
-        color_seq_states: dict[str, HubSpaceState] = {}
+        color_seq_states: dict[str, HubspaceState] = {}
         for state in hs_device.states:
             if state.functionClass == "power":
                 cur_item.on.on = state.value == "on"

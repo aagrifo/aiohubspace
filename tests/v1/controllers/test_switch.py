@@ -3,7 +3,7 @@
 import pytest
 
 from aiohubspace.v1.controllers.switch import SwitchController, features
-from aiohubspace.v1.device import HubSpaceState
+from aiohubspace.v1.device import HubspaceState
 
 from .. import utils
 
@@ -157,7 +157,7 @@ async def test_update_elem(mocked_controller):
     assert len(mocked_controller.items) == 1
     dev_update = utils.create_devices_from_data("transformer.json")[0]
     new_states = [
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "toggle",
                 "value": "on",
@@ -165,7 +165,7 @@ async def test_update_elem(mocked_controller):
                 "functionInstance": "zone-1",
             }
         ),
-        HubSpaceState(
+        HubspaceState(
             **{
                 "functionClass": "toggle",
                 "value": "off",

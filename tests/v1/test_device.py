@@ -189,7 +189,7 @@ with open(os.path.join(current_path, "data", "device_lock.json")) as fh:
                 "friendly_name": "friendly_name",
                 "functions": ["functions!"],
                 "states": [
-                    device.HubSpaceState(
+                    device.HubspaceState(
                         **{
                             "functionClass": "brightness",
                             "functionInstance": None,
@@ -210,7 +210,7 @@ with open(os.path.join(current_path, "data", "device_lock.json")) as fh:
                     "friendly_name": "friendly_name",
                     "functions": ["functions!"],
                     "states": [
-                        device.HubSpaceState(
+                        device.HubspaceState(
                             **{
                                 "functionClass": "brightness",
                                 "functionInstance": None,
@@ -303,6 +303,6 @@ def test_get_hs_device(hs_device, expected_attrs):
     ],
 )
 def test_HubSpaceState(data, expected_attrs):
-    elem = device.HubSpaceState(**data)
+    elem = device.HubspaceState(**data)
     for key, val in expected_attrs.items():
         assert getattr(elem, key) == val

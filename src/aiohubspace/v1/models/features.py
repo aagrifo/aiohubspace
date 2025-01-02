@@ -1,4 +1,4 @@
-"""Feature Schemas used by various HubSpace resources."""
+"""Feature Schemas used by various Hubspace resources."""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -154,7 +154,7 @@ class ModeFeature:
 
 @dataclass
 class OnFeature:
-    """Represent `On` Feature object as used by various HubSpace resources."""
+    """Represent `On` Feature object as used by various Hubspace resources."""
 
     on: bool
     func_class: str | None = field(default="power")
