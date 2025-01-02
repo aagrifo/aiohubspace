@@ -2,11 +2,13 @@ import pytest
 
 from aiohubspace.v1.controllers.device import DeviceController
 from aiohubspace.v1.models.resource import DeviceInformation
+from aiohubspace.v1.models.sensor import HubSpaceSensor
 
 from .. import utils
 
 a21_light = utils.create_devices_from_data("light-a21.json")[0]
 zandra_light = utils.create_devices_from_data("fan-ZandraFan.json")[1]
+freezer = utils.create_devices_from_data("freezer.json")[0]
 
 
 @pytest.fixture
@@ -32,6 +34,67 @@ async def test_initialize_a21(mocked_controller):
         name=a21_light.friendly_name,
         parent_id=a21_light.device_id,
     )
+    assert dev.sensors == {
+        "wifi-rssi": HubSpaceSensor(
+            id="wifi-rssi",
+            owner="30a2df8c-109b-42c2-aed6-a6b30c565f8f",
+            value=-50,
+            instance=None,
+        )
+    }
+    assert dev.binary_sensors == {}
+
+
+@pytest.mark.asyncio
+async def test_initialize_binary_sensors(mocked_controller):
+    await mocked_controller.initialize_elem(freezer)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    assert dev.id == freezer.id
+    assert dev.available is True
+    assert dev.device_information == DeviceInformation(
+        device_class=freezer.device_class,
+        default_image=freezer.default_image,
+        default_name=freezer.default_name,
+        manufacturer=freezer.manufacturerName,
+        model=freezer.model,
+        name=freezer.friendly_name,
+        parent_id=freezer.device_id,
+    )
+    assert dev.sensors == {
+        "wifi-rssi": HubSpaceSensor(
+            id="wifi-rssi",
+            owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
+            value=-71,
+            instance=None,
+        )
+    }
+    assert dev.binary_sensors == {
+        "error|freezer-high-temperature-alert": HubSpaceSensor(
+            id="error|freezer-high-temperature-alert",
+            owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
+            value="normal",
+            instance="freezer-high-temperature-alert",
+        ),
+        "error|fridge-high-temperature-alert": HubSpaceSensor(
+            id="error|fridge-high-temperature-alert",
+            owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
+            value="alerting",
+            instance="fridge-high-temperature-alert",
+        ),
+        "error|mcu-communication-failure": HubSpaceSensor(
+            id="error|mcu-communication-failure",
+            owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
+            value="normal",
+            instance="mcu-communication-failure",
+        ),
+        "error|temperature-sensor-failure": HubSpaceSensor(
+            id="error|temperature-sensor-failure",
+            owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
+            value="normal",
+            instance="temperature-sensor-failure",
+        ),
+    }
 
 
 @pytest.mark.xfail(reason="Expecting raw HS data and given devices")

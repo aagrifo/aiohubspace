@@ -46,13 +46,13 @@ class HubSpaceBridgeV1:
         self._known_dev_classes = {}
         # Data Updater
         self._events: EventStream = EventStream(self, polling_interval)
-        # Data Controllers
-        self._binary_sensors = None
-        self._devices: DeviceController = DeviceController(self)
+        # Data Controllerse
+        self._devices: DeviceController = DeviceController(
+            self
+        )  # Devices contain all sensors
         self._fans: FanController = FanController(self)
         self._lights: LightController = LightController(self)
         self._locks: LockController = LockController(self)
-        self._sensors = None
         self._switches: SwitchController = SwitchController(self)
         self._valves: ValveController = ValveController(self)
 
@@ -72,10 +72,6 @@ class HubSpaceBridgeV1:
         if exc_val:
             raise exc_val
         return exc_type
-
-    @property
-    def binary_sensors(self) -> None:
-        return self._binary_sensors
 
     @property
     def devices(self) -> DeviceController:
@@ -98,10 +94,6 @@ class HubSpaceBridgeV1:
         return self._locks
 
     @property
-    def sensors(self) -> None:
-        return self._sensors
-
-    @property
     def switches(self) -> SwitchController:
         return self._switches
 
@@ -112,12 +104,10 @@ class HubSpaceBridgeV1:
     @property
     def _controllers(self) -> set:
         dev_controllers = {
-            # self._binary_sensors,
             self._devices,
             self._fans,
             self._lights,
             self._locks,
-            # self._sensors,
             self._switches,
             self._valves,
         }

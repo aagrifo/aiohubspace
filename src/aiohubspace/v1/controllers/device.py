@@ -18,6 +18,7 @@ class DeviceController(BaseResourcesController[device.Device]):
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
         sensors: dict[str, sensor.HubSpaceSensor] = {}
+        binary_sensors: dict[str, sensor.HubSpaceSensor] = {}
         for state in hs_device.states:
             if state.functionClass == "available":
                 available = state.value
@@ -27,11 +28,20 @@ class DeviceController(BaseResourcesController[device.Device]):
                     owner=hs_device.device_id,
                     value=state.value,
                 )
+            elif state.functionClass in sensor.BINARY_SENSORS:
+                key = f"{state.functionClass}|{state.functionInstance}"
+                binary_sensors[key] = sensor.HubSpaceSensor(
+                    id=key,
+                    owner=hs_device.device_id,
+                    value=state.value,
+                    instance=state.functionInstance,
+                )
 
         self._items[hs_device.id] = device.Device(
             id=hs_device.id,
             available=available,
             sensors=sensors,
+            binary_sensors=binary_sensors,
             device_information=DeviceInformation(
                 device_class=hs_device.device_class,
                 default_image=hs_device.default_image,

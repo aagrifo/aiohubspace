@@ -12,6 +12,7 @@ class Device:
     available: bool
 
     sensors: dict[str, HubSpaceSensor] = field(default_factory=dict)
+    binary_sensors: dict[str, HubSpaceSensor] = field(default_factory=dict)
     device_information: DeviceInformation = field(default_factory=DeviceInformation)
 
     type: ResourceTypes = ResourceTypes.PARENT_DEVICE

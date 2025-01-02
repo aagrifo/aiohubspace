@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 MAPPED_SENSORS = [
     "battery-level",
@@ -7,9 +7,13 @@ MAPPED_SENSORS = [
     "wifi-rssi",
 ]
 
+BINARY_SENSORS = ["error"]
+
 
 @dataclass
 class HubSpaceSensor:
     id: str
     owner: str
     value: str | int | float | None
+
+    instance: str | None = field(default=None)
