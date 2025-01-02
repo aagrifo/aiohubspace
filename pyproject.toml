@@ -31,7 +31,10 @@ test = [
   "pytest",
   "pytest-mock",
   "pytest-cov",
+  "pytest-asyncio",
+  "aioresponses",
   "pytest-aioresponses",
+  "anyio",
 ]
 cli = [
   "click",
