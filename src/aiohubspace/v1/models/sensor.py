@@ -16,4 +16,5 @@ class HubspaceSensor:
     owner: str
     value: str | int | float | None
 
+    unit: str | None = field(default=None)
     instance: str | None = field(default=None)

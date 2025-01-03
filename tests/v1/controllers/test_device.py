@@ -40,6 +40,7 @@ async def test_initialize_a21(mocked_controller):
             owner="30a2df8c-109b-42c2-aed6-a6b30c565f8f",
             value=-50,
             instance=None,
+            unit="dB",
         )
     }
     assert dev.binary_sensors == {}
@@ -67,6 +68,7 @@ async def test_initialize_binary_sensors(mocked_controller):
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
             value=-71,
             instance=None,
+            unit="dB",
         )
     }
     assert dev.binary_sensors == {

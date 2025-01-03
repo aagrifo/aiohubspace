@@ -201,7 +201,8 @@ class HubspaceBridgeV1:
 
     async def initialize(self) -> None:
         """Query Hubspace API for all data"""
-        self._account_id = await self.get_account_id()
+        if not self._account_id:
+            self._account_id = await self.get_account_id()
         hs_data = await self.fetch_data()
         await asyncio.gather(
             *[

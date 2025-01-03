@@ -1,9 +1,20 @@
 """Controller that holds top-level devices"""
 
-from ..device import HubspaceDevice, get_hs_device
+import re
+from typing import Any
+
+from ..device import HubspaceDevice, HubspaceState, get_hs_device
 from ..models import device, sensor
 from ..models.resource import DeviceInformation, ResourceTypes
 from .base import BaseResourcesController
+
+unit_extractor = re.compile(r"(\d*)(\D*)")
+
+SENSOR_TO_UNIT: dict[str, str] = {
+    "power": "W",
+    "watts": "W",
+    "wifi-rssi": "dB",
+}
 
 
 class DeviceController(BaseResourcesController[device.Device]):
@@ -23,17 +34,21 @@ class DeviceController(BaseResourcesController[device.Device]):
             if state.functionClass == "available":
                 available = state.value
             elif state.functionClass in sensor.MAPPED_SENSORS:
+                value, unit = split_sensor_data(state)
                 sensors[state.functionClass] = sensor.HubspaceSensor(
                     id=state.functionClass,
                     owner=hs_device.device_id,
-                    value=state.value,
+                    value=value,
+                    unit=unit,
                 )
             elif state.functionClass in sensor.BINARY_SENSORS:
+                value, unit = split_sensor_data(state)
                 key = f"{state.functionClass}|{state.functionInstance}"
                 binary_sensors[key] = sensor.HubspaceSensor(
                     id=key,
                     owner=hs_device.device_id,
-                    value=state.value,
+                    value=value,
+                    unit=unit,
                     instance=state.functionInstance,
                 )
 
@@ -76,3 +91,11 @@ class DeviceController(BaseResourcesController[device.Device]):
                 cur_item.available = state.value
             elif state.functionClass in sensor.MAPPED_SENSORS:
                 cur_item.sensors[state.functionClass].value = state.value
+
+
+def split_sensor_data(state: HubspaceState) -> tuple[Any, str | None]:
+    if isinstance(state.value, str):
+        if match := unit_extractor.match(state.value):
+            if (val := match.group(1)) and (unit := match.group(2)):
+                return val, unit
+    return state.value, SENSOR_TO_UNIT.get(state.functionClass, None)
