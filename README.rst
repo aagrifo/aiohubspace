@@ -73,21 +73,21 @@ Example Usage
 =============
 All examples assume you entered the shell with `python -m asyncio`
 
-```python
+.. code-block:: python
 
-from aiohubspace import v1
-import logging
-logging.getLogger("aiohubspace").setLevel(logging.DEBUG)
-USERNAME="" # Hubspace username
-PASSWORD="" # Hubspace password
-POLLING_INTERVAL=30 # Number of seconds between polling cycles
-# Create the bridge
-bridge = v1.HubspaceBridgeV1(USERNAME, PASSWORD, polling_interval=POLLING_INTERVAL)
-# Query the API and populate the controllers
-await bridge.initialize()
-# Turn on the light that matches id="84338ebe-7ddf-4bfa-9753-3ee8cdcc8da6"
-await conn.lights.turn_off("84338ebe-7ddf-4bfa-9753-3ee8cdcc8da6")
-```
+    from aiohubspace import v1
+    import logging
+    logging.getLogger("aiohubspace").setLevel(logging.DEBUG)
+    USERNAME="" # Hubspace username
+    PASSWORD="" # Hubspace password
+    POLLING_INTERVAL=30 # Number of seconds between polling cycles
+    # Create the bridge
+    bridge = v1.HubspaceBridgeV1(USERNAME, PASSWORD, polling_interval=POLLING_INTERVAL)
+    # Query the API and populate the controllers
+    await bridge.initialize()
+    # Turn on the light that matches id="84338ebe-7ddf-4bfa-9753-3ee8cdcc8da6"
+    await conn.lights.turn_off("84338ebe-7ddf-4bfa-9753-3ee8cdcc8da6")
+
 
 Troubleshooting
 ===============
