@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aiohubspace"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
   "aiohttp",
   "beautifulsoup4",
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 authors = [
   {name = "Chris Dohmen", email = "chris.dohmen11@gmail.com"}
 ]
@@ -23,6 +23,7 @@ keywords = ["Hubspace"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
 
