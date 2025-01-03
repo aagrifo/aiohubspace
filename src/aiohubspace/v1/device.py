@@ -70,6 +70,11 @@ class HubspaceDevice:
             self.model = "YardStake"
         if self.default_image == "a19-e26-color-cct-60w-smd-frosted-icon":
             self.model = "12A19060WRGBWH2"
+        if (
+            self.device_class == "switch"
+            and self.default_image == "slide-dimmer-icon"
+        ):
+            self.model = "HPDA110NWBP"
         # Dimmer Switch fix - A switch cannot dim, but a light can
         if self.device_class == "switch" and any(
             [state.functionClass == "brightness" for state in self.states]
