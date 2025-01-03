@@ -36,6 +36,7 @@ class HubspaceBridgeV1:
         session: Optional[aiohttp.ClientSession] = None,
         polling_interval: int = 30,
     ):
+        self._close_session: bool = session is None
         self._web_session: aiohttp.ClientSession = session
         self._account_id: Optional[str] = None
         self._auth = HubspaceAuth(username, password)
@@ -163,7 +164,7 @@ class HubspaceBridgeV1:
     async def close(self) -> None:
         """Close connection and cleanup."""
         await self.events.stop()
-        if self._web_session:
+        if self._close_session and self._web_session:
             await self._web_session.close()
         self.logger.info("Connection to bridge closed.")
 
