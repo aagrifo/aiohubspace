@@ -137,10 +137,16 @@ class BaseResourcesController(Generic[HubspaceResource]):
             )
         # subscribe to item updates
         res_filter = [x.value for x in self.ITEM_TYPES]
-        self._bridge.events.subscribe(
-            self._handle_event,
-            resource_filter=tuple(res_filter),
-        )
+        if res_filter:
+            self._bridge.events.subscribe(
+                self._handle_event,
+                resource_filter=tuple(res_filter),
+            )
+        else:
+            # Subscribe to all events
+            self._bridge.events.subscribe(
+                self._handle_event,
+            )
         self._initialized = True
 
     async def initialize_elem(self, element: HubspaceDevice) -> None:
