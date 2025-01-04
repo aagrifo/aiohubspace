@@ -136,9 +136,10 @@ class BaseResourcesController(Generic[HubspaceResource]):
                 ),
             )
         # subscribe to item updates
+        res_filter = [x.value for x in self.ITEM_TYPES]
         self._bridge.events.subscribe(
             self._handle_event,
-            resource_filter=[x.value for x in self.ITEM_TYPES],
+            resource_filter=tuple(res_filter),
         )
         self._initialized = True
 

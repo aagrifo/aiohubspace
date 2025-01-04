@@ -128,23 +128,26 @@ class EventStream:
     def emit(self, event_type: EventType, data: HubspaceEvent = None) -> None:
         """Emit event to all listeners."""
         for callback, event_filter, resource_filter in self._subscribers:
-            if event_filter is not None and event_type not in event_filter:
-                continue
-            if data is not None:
-                if resource_filter is not None:
-                    if (
-                        "device" in data
-                        and data["device"]
-                        and not any(
-                            data["device"].device_class not in res_filter
-                            for res_filter in resource_filter
-                        )
-                    ):
-                        continue
-            if iscoroutinefunction(callback):
-                asyncio.create_task(callback(event_type, data))
-            else:
-                callback(event_type, data)
+            try:
+                if event_filter is not None and event_type not in event_filter:
+                    continue
+                if data is not None:
+                    if resource_filter is not None:
+                        if (
+                            "device" in data
+                            and data["device"]
+                            and not any(
+                                data["device"].device_class == res_filter
+                                for res_filter in resource_filter
+                            )
+                        ):
+                            continue
+                if iscoroutinefunction(callback):
+                    asyncio.create_task(callback(event_type, data))
+                else:
+                    callback(event_type, data)
+            except Exception:
+                self._logger.exception("Unhandled exception. Please open a bug report")
 
     async def __event_reader(self) -> None:
         """Poll the current states"""
@@ -193,5 +196,8 @@ class EventStream:
     async def __event_processor(self) -> None:
         """Process the hubspace devices"""
         while True:
-            event: HubspaceEvent = await self._event_queue.get()
-            self.emit(event["type"], event)
+            try:
+                event: HubspaceEvent = await self._event_queue.get()
+                self.emit(event["type"], event)
+            except Exception:
+                self._logger.exception("Unhandled exception. Please open a bug report")
