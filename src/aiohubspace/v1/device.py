@@ -47,36 +47,42 @@ class HubspaceDevice:
     def __post_init__(self):
         if not self.model and self.default_image == "ceiling-fan-snyder-park-icon":
             self.model = "DriskolFan"
-        if not self.model and self.default_image == "ceiling-fan-vinings-icon":
+        elif not self.model and self.default_image == "ceiling-fan-vinings-icon":
             self.model = "VinwoodFan"
-        if (
+        elif (
             self.device_class == "fan"
             and self.model == "TBD"
             and self.default_image == "ceiling-fan-chandra-icon"
         ):
             self.model = "ZandraFan"
-        if (
+        elif (
             self.model == "TBD"
             and self.default_image == "ceiling-fan-ac-cct-dardanus-icon"
         ):
             self.model = "NevaliFan"
-        if (
+        elif (
             self.device_class == "fan"
             and not self.model
             and self.default_image == "ceiling-fan-slender-icon"
         ):
             self.model = "TagerFan"
-        if self.model == "Smart Stake Timer":
+        elif self.model == "Smart Stake Timer":
             self.model = "YardStake"
-        if self.default_image == "a19-e26-color-cct-60w-smd-frosted-icon":
+        elif self.default_image == "a19-e26-color-cct-60w-smd-frosted-icon":
             self.model = "12A19060WRGBWH2"
-        if self.device_class == "switch" and self.default_image == "slide-dimmer-icon":
+        elif self.device_class == "switch" and self.default_image == "slide-dimmer-icon":
             self.model = "HPDA110NWBP"
         # Dimmer Switch fix - A switch cannot dim, but a light can
-        if self.device_class == "switch" and any(
+        elif self.device_class == "switch" and any(
             [state.functionClass == "brightness" for state in self.states]
         ):
             self.device_class = "light"
+        elif (
+            self.device_class == "switch"
+            and self.default_image == "smart-switch-icon"
+            and self.model == "TBD"
+        ):
+            self.model = "HPSA11CWB"
 
 
 def get_hs_device(hs_device: dict[str, Any]) -> HubspaceDevice:
