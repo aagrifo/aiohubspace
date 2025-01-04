@@ -11,6 +11,7 @@ from collections import namedtuple
 from typing import Final, Optional
 from urllib.parse import parse_qs, urlparse
 
+import aiohttp
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
@@ -96,26 +97,29 @@ class HubspaceAuth:
             HUBSPACE_OPENID_URL, params=code_params, allow_redirects=False
         ) as response:
             logger.debug(STATUS_CODE, response.status)
-            response.raise_for_status()
-            contents = await response.text()
-            login_data = await extract_login_data(contents)
-            logger.debug(
-                (
-                    "WebApp Login:"
-                    "\n\tSession Code: %s"
-                    "\n\tExecution: %s"
-                    "\n\tTab ID:%s"
-                ),
-                login_data.session_code,
-                login_data.execution,
-                login_data.tab_id,
-            )
-            return await self.generate_code(
-                login_data.session_code,
-                login_data.execution,
-                login_data.tab_id,
-                client,
-            )
+            if response.status == 200:
+                contents = await response.text()
+                login_data = await extract_login_data(contents)
+                logger.debug(
+                    (
+                        "WebApp Login:"
+                        "\n\tSession Code: %s"
+                        "\n\tExecution: %s"
+                        "\n\tTab ID:%s"
+                    ),
+                    login_data.session_code,
+                    login_data.execution,
+                    login_data.tab_id,
+                )
+                return await self.generate_code(
+                    login_data.session_code,
+                    login_data.execution,
+                    login_data.tab_id,
+                    client,
+                )
+            elif response.status == 302:
+                logger.debug("Hubspace returned an active session")
+                return await HubspaceAuth.parse_code(response)
 
     @staticmethod
     async def generate_challenge_data() -> auth_challenge:
@@ -175,16 +179,21 @@ class HubspaceAuth:
                 raise InvalidAuth(
                     "Unable to authenticate with the supplied username / password"
                 )
-            try:
-                parsed_url = urlparse(response.headers["location"])
-                code = parse_qs(parsed_url.query)["code"][0]
-            except KeyError:
-                raise InvalidResponse(
-                    f"Unable to process the result from {response.url}: {response.status}"
-                )
+            return await HubspaceAuth.parse_code(response)
+
+    @staticmethod
+    async def parse_code(response: aiohttp.ClientResponse) -> str:
+        """Parses the code for generating tokens"""
+        try:
+            parsed_url = urlparse(response.headers["location"])
+            code = parse_qs(parsed_url.query)["code"][0]
             logger.debug("Location: %s", response.headers.get("location"))
             logger.debug("Code: %s", code)
-            return code
+        except KeyError:
+            raise InvalidResponse(
+                f"Unable to process the result from {response.url}: {response.status}"
+            )
+        return code
 
     @staticmethod
     async def generate_refresh_token(
