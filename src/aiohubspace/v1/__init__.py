@@ -3,6 +3,7 @@
 __all__ = ["HubspaceBridgeV1", "InvalidAuth", "InvalidResponse", "HubspaceError"]
 
 import asyncio
+import contextlib
 import copy
 import logging
 from contextlib import asynccontextmanager
@@ -151,7 +152,8 @@ class HubspaceBridgeV1:
         self._known_devs.add(device_id)
 
     def remove_device(self, device_id: str) -> None:
-        self._known_devs.remove(device_id)
+        with contextlib.suppress(KeyError):
+            self._known_devs.remove(device_id)
 
     @property
     def account_id(self) -> str:

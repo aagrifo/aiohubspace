@@ -9,6 +9,7 @@ from .. import utils
 
 a21_light = utils.create_devices_from_data("light-a21.json")[0]
 zandra_light = utils.create_devices_from_data("fan-ZandraFan.json")[1]
+dimmer_light = utils.create_devices_from_data("dimmer-HPDA1110NWBP.json")[0]
 
 
 @pytest.fixture
@@ -222,60 +223,70 @@ async def test_initialize_zandra(mocked_controller):
 
 
 @pytest.mark.asyncio
-async def test_turn_on(mocked_controller):
-    await mocked_controller.initialize_elem(a21_light)
+async def test_initialize_dimmer(mocked_controller):
+    await mocked_controller.initialize_elem(dimmer_light)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    assert dev.id == "ebda9f3b-05bc-4764-a9f7-e2d52f707130"
+    assert dev.on == features.OnFeature(
+        on=False, func_class="power", func_instance="gang-1"
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "hs_dev, expected_instance",
+    [
+        (a21_light, None),
+        (zandra_light, "light-power"),
+        (dimmer_light, "gang-1"),
+    ],
+)
+async def test_turn_on(hs_dev, expected_instance, mocked_controller):
+    await mocked_controller.initialize_elem(hs_dev)
     dev = mocked_controller.items[0]
     dev.on.on = False
-    await mocked_controller.turn_on(a21_light.id)
+    await mocked_controller.turn_on(hs_dev.id)
     req = utils.get_json_call(mocked_controller)
-    assert req["metadeviceId"] == a21_light.id
+    assert req["metadeviceId"] == hs_dev.id
     expected_states = [
         {
             "functionClass": "power",
-            "functionInstance": None,
+            "functionInstance": expected_instance,
             "lastUpdateTime": 12345,
             "value": "on",
         }
     ]
     utils.ensure_states_sent(mocked_controller, expected_states)
+    assert dev.is_on
 
 
 @pytest.mark.asyncio
-async def test_turn_on_zandra(mocked_controller):
-    await mocked_controller.initialize_elem(zandra_light)
-    dev = mocked_controller.items[0]
-    dev.on.on = False
-    await mocked_controller.turn_on(zandra_light.id)
-    req = utils.get_json_call(mocked_controller)
-    assert req["metadeviceId"] == zandra_light.id
-    expected_states = [
-        {
-            "functionClass": "power",
-            "functionInstance": "light-power",
-            "lastUpdateTime": 12345,
-            "value": "on",
-        }
-    ]
-    utils.ensure_states_sent(mocked_controller, expected_states)
-
-
-@pytest.mark.asyncio
-async def test_turn_off(mocked_controller):
-    await mocked_controller.initialize_elem(a21_light)
+@pytest.mark.parametrize(
+    "hs_dev, expected_instance",
+    [
+        (a21_light, None),
+        (zandra_light, "light-power"),
+        (dimmer_light, "gang-1"),
+    ],
+)
+async def test_turn_off(hs_dev, expected_instance, mocked_controller):
+    await mocked_controller.initialize_elem(hs_dev)
     dev = mocked_controller.items[0]
     dev.on.on = True
-    await mocked_controller.turn_off(a21_light.id)
+    await mocked_controller.turn_off(hs_dev.id)
     req = utils.get_json_call(mocked_controller)
-    assert req["metadeviceId"] == a21_light.id
+    assert req["metadeviceId"] == hs_dev.id
     expected_states = [
         {
             "functionClass": "power",
-            "functionInstance": None,
+            "functionInstance": expected_instance,
             "lastUpdateTime": 12345,
             "value": "off",
         }
     ]
     utils.ensure_states_sent(mocked_controller, expected_states)
+    assert not dev.is_on
 
 
 @pytest.mark.asyncio
@@ -445,6 +456,8 @@ async def test_set_effect(effect, expected_instance, mocked_controller):
 async def test_update_elem(mocked_controller):
     await mocked_controller.initialize_elem(a21_light)
     assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    dev.on.on = False
     dev_update = utils.create_devices_from_data("light-a21.json")[0]
     new_states = [
         HubspaceState(

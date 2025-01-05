@@ -87,7 +87,13 @@ class EventStream:
     async def initialize(self) -> None:
         """Start the polling processes"""
         assert len(self._bg_tasks) == 0
+        await self.initialize_reader()
+        await self.initialize_processor()
+
+    async def initialize_reader(self) -> None:
         self._bg_tasks.append(asyncio.create_task(self.__event_reader()))
+
+    async def initialize_processor(self) -> None:
         self._bg_tasks.append(asyncio.create_task(self.__event_processor()))
 
     async def stop(self) -> None:
@@ -159,13 +165,11 @@ class EventStream:
                 data = await self._bridge.fetch_data()
                 for dev in data:
                     hs_dev = get_hs_device(dev)
+                    if not hs_dev.device_class:
+                        continue
                     event_type = EventType.RESOURCE_UPDATED
                     if hs_dev.id not in self._bridge.tracked_devices:
                         event_type = EventType.RESOURCE_ADDED
-                        self._bridge.add_device(hs_dev.id)
-                    if hs_dev.device_class not in self._bridge.tracked_device_classes:
-                        skipped_ids.append(hs_dev.id)
-                        continue
                     self._event_queue.put_nowait(
                         HubspaceEvent(
                             type=event_type,
@@ -178,7 +182,7 @@ class EventStream:
                 # Auto-retry will take care of the issue
                 self._logger.warning(err)
             except Exception as err:
-                self._logger.warning(err)
+                self._logger.exception(err)
                 raise err
             else:
                 # Connection was successful. Find missing devices
