@@ -186,7 +186,7 @@ async def test_update_elem(mocked_controller):
 
 
 @pytest.mark.asyncio
-async def test_no(bridge):
+async def test_switch_emit_update(bridge):
     add_event = {
         "type": "add",
         "device_id": transformer.id,
