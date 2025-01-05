@@ -73,8 +73,10 @@ class BaseResourcesController(Generic[HubspaceResource]):
         item_id = evt_data.get("device_id", None)
         if evt_type == EventType.RESOURCE_ADDED:
             cur_item = await self.initialize_elem(evt_data["device"])
+            self._bridge.add_device(evt_data["device"].id)
         elif evt_type == EventType.RESOURCE_DELETED:
             cur_item = self._items.pop(item_id, evt_data)
+            self._bridge.remove_device(evt_data["device"].id)
         elif evt_type == EventType.RESOURCE_UPDATED:
             # existing item updated
             try:
@@ -136,11 +138,11 @@ class BaseResourcesController(Generic[HubspaceResource]):
                 ),
             )
         # subscribe to item updates
-        res_filter = [x.value for x in self.ITEM_TYPES]
+        res_filter = tuple(x.value for x in self.ITEM_TYPES)
         if res_filter:
             self._bridge.events.subscribe(
                 self._handle_event,
-                resource_filter=tuple(res_filter),
+                resource_filter=res_filter,
             )
         else:
             # Subscribe to all events

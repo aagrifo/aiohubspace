@@ -2,10 +2,6 @@ name: Execute tests and linting
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-    - main
-  pull_request:
 
 jobs:
   run_tests:
@@ -31,3 +27,21 @@ jobs:
         run: |
           pip install pre-commit
           pre-commit run --all-files
+
+  pypi-publish:
+    needs: [run_tests]
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    if: github.ref_name == github.event.repository.default_branch
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Create files
+        run: |
+          pip install tox
+          tox -e build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

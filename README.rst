@@ -11,6 +11,8 @@ This project was designed to asynchronously connect to the Hubspace API. It
 has the ability to retrieve the devices and set new states. It was updated
 from `hubspace_async` and merged with concepts from `aiohue`.
 
+[![Execute tests and linting](https://github.com/Expl0dingBanana/aiohubspace/actions/workflows/cicd.yaml/badge.svg?branch=main)](https://github.com/Expl0dingBanana/aiohubspace/actions/workflows/cicd.yaml)
+
 Overview
 ========
 All data is stored within a "bridge" that knows of all of the devices aligned

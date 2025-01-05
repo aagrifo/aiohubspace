@@ -1,7 +1,10 @@
 """Test SwitchController"""
 
+import asyncio
+
 import pytest
 
+from aiohubspace.v1.controllers import event
 from aiohubspace.v1.controllers.switch import SwitchController, features
 from aiohubspace.v1.device import HubspaceState
 
@@ -180,3 +183,37 @@ async def test_update_elem(mocked_controller):
     dev = mocked_controller.items[0]
     assert dev.on["zone-1"].on is True
     assert dev.on["zone-2"].on is False
+
+
+@pytest.mark.asyncio
+async def test_switch_emit_update(bridge):
+    add_event = {
+        "type": "add",
+        "device_id": transformer.id,
+        "device": transformer,
+    }
+    # Simulate a poll
+    bridge.events.emit(event.EventType.RESOURCE_ADDED, add_event)
+    # Bad way to check, but just wait a second so it can get processed
+    await asyncio.sleep(1)
+    assert len(bridge.switches._items) == 1
+    # Simulate an update
+    transformer_update = utils.create_devices_from_data("transformer.json")[0]
+    utils.modify_state(
+        transformer_update,
+        HubspaceState(
+            functionClass="toggle",
+            functionInstance="zone-2",
+            value="off",
+        ),
+    )
+    update_event = {
+        "type": "update",
+        "device_id": transformer.id,
+        "device": transformer_update,
+    }
+    bridge.events.emit(event.EventType.RESOURCE_UPDATED, update_event)
+    # Bad way to check, but just wait a second so it can get processed
+    await asyncio.sleep(1)
+    assert len(bridge.switches._items) == 1
+    assert not bridge.switches._items[transformer.id].on["zone-2"].on
