@@ -16,6 +16,15 @@ def get_device_dump(file_name: str) -> Any:
         return json.load(fh)
 
 
+def get_raw_dump(file_name: str) -> Any:
+    """Get a device dump
+
+    :param file_name: Name of the file to load
+    """
+    with open(os.path.join(current_path, "data", file_name), "r") as fh:
+        return json.load(fh)
+
+
 def create_devices_from_data(file_name: str) -> list[HubspaceDevice]:
     """Generate devices from a data dump
 

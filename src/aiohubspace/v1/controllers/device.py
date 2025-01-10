@@ -102,11 +102,15 @@ class DeviceController(BaseResourcesController[Device]):
                 cur_item.available = state.value
             elif state.functionClass in sensor.MAPPED_SENSORS:
                 cur_item.sensors[state.functionClass].value = state.value
+            elif state.functionClass in sensor.BINARY_SENSORS:
+                value, _ = split_sensor_data(state)
+                key = f"{state.functionClass}|{state.functionInstance}"
+                cur_item.binary_sensors[key].value = value
 
 
 def split_sensor_data(state: HubspaceState) -> tuple[Any, str | None]:
     if isinstance(state.value, str):
-        if match := unit_extractor.match(state.value):
-            if (val := match.group(1)) and (unit := match.group(2)):
-                return val, unit
+        match = unit_extractor.match(state.value)
+        if match and match.group(1) and match.group(2):
+            return match.group(1), match.group(2)
     return state.value, SENSOR_TO_UNIT.get(state.functionClass, None)
