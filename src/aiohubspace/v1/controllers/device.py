@@ -31,6 +31,9 @@ class DeviceController(BaseResourcesController[Device]):
         available: bool = False
         sensors: dict[str, sensor.HubspaceSensor] = {}
         binary_sensors: dict[str, sensor.HubspaceSensor] = {}
+        wifi_mac: str | None = None
+        ble_mac: str | None = None
+
         for state in hs_device.states:
             if state.functionClass == "available":
                 available = state.value
@@ -52,6 +55,10 @@ class DeviceController(BaseResourcesController[Device]):
                     unit=unit,
                     instance=state.functionInstance,
                 )
+            elif state.functionClass == "wifi-mac-address":
+                wifi_mac = state.value
+            elif state.functionClass == "ble-mac-address":
+                ble_mac = state.value
 
         self._items[hs_device.id] = Device(
             id=hs_device.id,
@@ -66,6 +73,8 @@ class DeviceController(BaseResourcesController[Device]):
                 model=hs_device.model,
                 name=hs_device.friendly_name,
                 parent_id=hs_device.device_id,
+                wifi_mac=wifi_mac,
+                ble_mac=ble_mac,
             ),
         )
         return self._items[hs_device.id]

@@ -39,3 +39,5 @@ class DeviceInformation:
     model: Optional[str] = None
     name: Optional[str] = None
     parent_id: Optional[str] = None
+    wifi_mac: Optional[str] = None
+    ble_mac: Optional[str] = None
