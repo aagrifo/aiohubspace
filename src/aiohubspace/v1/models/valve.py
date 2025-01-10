@@ -41,4 +41,4 @@ class Valve:
 class ValvePut:
     """States that can be updated for a Switch"""
 
-    open: dict[str, features.OpenFeature] | None = None
+    open: features.OpenFeature | None = None

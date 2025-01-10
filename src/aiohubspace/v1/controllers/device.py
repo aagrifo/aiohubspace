@@ -4,7 +4,8 @@ import re
 from typing import Any
 
 from ..device import HubspaceDevice, HubspaceState, get_hs_device
-from ..models import device, sensor
+from ..models import sensor
+from ..models.device import Device
 from ..models.resource import DeviceInformation, ResourceTypes
 from .base import BaseResourcesController
 
@@ -17,14 +18,14 @@ SENSOR_TO_UNIT: dict[str, str] = {
 }
 
 
-class DeviceController(BaseResourcesController[device.Device]):
+class DeviceController(BaseResourcesController[Device]):
     """Controller that identifies top-level components."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = []
-    ITEM_CLS = device.Device
+    ITEM_CLS = Device
 
-    async def initialize_elem(self, hs_device: HubspaceDevice) -> None:
+    async def initialize_elem(self, hs_device: HubspaceDevice) -> Device:
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
@@ -52,7 +53,7 @@ class DeviceController(BaseResourcesController[device.Device]):
                     instance=state.functionInstance,
                 )
 
-        self._items[hs_device.id] = device.Device(
+        self._items[hs_device.id] = Device(
             id=hs_device.id,
             available=available,
             sensors=sensors,
@@ -67,6 +68,7 @@ class DeviceController(BaseResourcesController[device.Device]):
                 parent_id=hs_device.device_id,
             ),
         )
+        return self._items[hs_device.id]
 
     def get_filtered_devices(self, initial_data: list[dict]) -> list[dict]:
         """Find parent devices"""

@@ -2,18 +2,19 @@
 
 from .. import device
 from ..device import HubspaceDevice
-from ..models import fan, features
+from ..models import features
+from ..models.fan import Fan, FanPut
 from ..models.resource import DeviceInformation, ResourceTypes
 from ..util import ordered_list_item_to_percentage
 from .base import BaseResourcesController
 
 
-class FanController(BaseResourcesController[fan.Fan]):
+class FanController(BaseResourcesController[Fan]):
     """Controller holding and managing Hubspace resources of type `fan`."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = [ResourceTypes.FAN]
-    ITEM_CLS = fan.Fan
+    ITEM_CLS = Fan
     ITEM_MAPPING = {
         "on": "power",
         "speed": "fan-speed",
@@ -45,7 +46,7 @@ class FanController(BaseResourcesController[fan.Fan]):
         """Set the preset of the fan."""
         await self.set_state(device_id, on=True, preset=preset)
 
-    async def initialize_elem(self, hs_device: HubspaceDevice) -> None:
+    async def initialize_elem(self, hs_device: HubspaceDevice) -> Fan:
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
@@ -79,7 +80,7 @@ class FanController(BaseResourcesController[fan.Fan]):
             elif state.functionClass == "available":
                 available = state.value
 
-        self._items[hs_device.id] = fan.Fan(
+        self._items[hs_device.id] = Fan(
             hs_device.functions,
             id=hs_device.id,
             available=available,
@@ -97,6 +98,7 @@ class FanController(BaseResourcesController[fan.Fan]):
             direction=direction,
             preset=preset,
         )
+        return self._items[hs_device.id]
 
     async def update_elem(self, hs_device: HubspaceDevice) -> None:
         cur_item = self.get_device(hs_device.id)
@@ -123,7 +125,7 @@ class FanController(BaseResourcesController[fan.Fan]):
         preset: bool | None = None,
     ) -> None:
         """Set supported feature(s) to fan resource."""
-        update_obj = fan.FanPut()
+        update_obj = FanPut()
         cur_item = self.get_device(device_id)
         if on is not None:
             update_obj.on = features.OnFeature(on=on)

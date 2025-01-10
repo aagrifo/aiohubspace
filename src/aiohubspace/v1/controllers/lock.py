@@ -1,17 +1,18 @@
 """Controller holding and managing Hubspace resources of type `lock`."""
 
 from ..device import HubspaceDevice
-from ..models import features, lock
+from ..models import features
+from ..models.lock import Lock, LockPut
 from ..models.resource import DeviceInformation, ResourceTypes
 from .base import BaseResourcesController
 
 
-class LockController(BaseResourcesController[lock.Lock]):
+class LockController(BaseResourcesController[Lock]):
     """Controller holding and managing Hubspace resources of type `lock`."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = [ResourceTypes.LOCK]
-    ITEM_CLS = lock.Lock
+    ITEM_CLS = Lock
     ITEM_MAPPING = {"position": "lock-control"}
 
     async def lock(self, device_id: str) -> None:
@@ -26,7 +27,7 @@ class LockController(BaseResourcesController[lock.Lock]):
             device_id, lock_position=features.CurrentPositionEnum.UNLOCKING
         )
 
-    async def initialize_elem(self, hs_device: HubspaceDevice) -> None:
+    async def initialize_elem(self, hs_device: HubspaceDevice) -> Lock:
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
@@ -39,7 +40,7 @@ class LockController(BaseResourcesController[lock.Lock]):
             elif state.functionClass == "available":
                 available = state.value
 
-        self._items[hs_device.id] = lock.Lock(
+        self._items[hs_device.id] = Lock(
             hs_device.functions,
             id=hs_device.id,
             available=available,
@@ -54,6 +55,7 @@ class LockController(BaseResourcesController[lock.Lock]):
             ),
             position=current_position,
         )
+        return self._items[hs_device.id]
 
     async def update_elem(self, hs_device: HubspaceDevice) -> None:
         cur_item = self.get_device(hs_device.id)
@@ -69,7 +71,7 @@ class LockController(BaseResourcesController[lock.Lock]):
         lock_position: features.CurrentPositionEnum | None = None,
     ) -> None:
         """Set supported feature(s) to fan resource."""
-        update_obj = lock.LockPut()
+        update_obj = LockPut()
         if lock_position is not None:
             update_obj.position = features.CurrentPositionFeature(
                 position=lock_position

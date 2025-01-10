@@ -1,12 +1,13 @@
 """Controller holding and managing Hubspace resources of type `switch`."""
 
 from ..device import HubspaceDevice
-from ..models import features, switch
+from ..models import features
 from ..models.resource import DeviceInformation, ResourceTypes
+from ..models.switch import Switch, SwitchPut
 from .base import BaseResourcesController
 
 
-class SwitchController(BaseResourcesController[switch.Switch]):
+class SwitchController(BaseResourcesController[Switch]):
     """Controller holding and managing Hubspace resources of type `switch`.
 
     A switch can have one or more toggleable elements. They are controlled
@@ -19,7 +20,7 @@ class SwitchController(BaseResourcesController[switch.Switch]):
         ResourceTypes.POWER_OUTLET,
         ResourceTypes.LANDSCAPE_TRANSFORMER,
     ]
-    ITEM_CLS = switch.Switch
+    ITEM_CLS = Switch
     ITEM_MAPPING = {}
 
     async def turn_on(self, device_id: str, instance: str | None = None) -> None:
@@ -30,7 +31,7 @@ class SwitchController(BaseResourcesController[switch.Switch]):
         """Turn off the switch."""
         await self.set_state(device_id, on=False, instance=instance)
 
-    async def initialize_elem(self, hs_device: HubspaceDevice) -> None:
+    async def initialize_elem(self, hs_device: HubspaceDevice) -> Switch:
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
@@ -45,7 +46,7 @@ class SwitchController(BaseResourcesController[switch.Switch]):
             elif state.functionClass == "available":
                 available = state.value
 
-        self._items[hs_device.id] = switch.Switch(
+        self._items[hs_device.id] = Switch(
             hs_device.functions,
             id=hs_device.id,
             available=available,
@@ -60,6 +61,7 @@ class SwitchController(BaseResourcesController[switch.Switch]):
             ),
             on=on,
         )
+        return self._items[hs_device.id]
 
     async def update_elem(self, hs_device: HubspaceDevice) -> None:
         cur_item = self.get_device(hs_device.id)
@@ -76,7 +78,7 @@ class SwitchController(BaseResourcesController[switch.Switch]):
         instance: str | None = None,
     ) -> None:
         """Set supported feature(s) to fan resource."""
-        update_obj = switch.SwitchPut()
+        update_obj = SwitchPut()
         if on is not None:
             dev = self.get_device(device_id)
             try:

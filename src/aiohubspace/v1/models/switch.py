@@ -41,4 +41,4 @@ class Switch:
 class SwitchPut:
     """States that can be updated for a Switch"""
 
-    on: dict[str, features.OnFeature] | None = None
+    on: features.OnFeature | None = None

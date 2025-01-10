@@ -4,18 +4,19 @@ from contextlib import suppress
 
 from .. import device
 from ..device import HubspaceDevice, HubspaceState
-from ..models import features, light
+from ..models import features
+from ..models.light import Light, LightPut
 from ..models.resource import DeviceInformation, ResourceTypes
 from ..util import process_names, process_range
 from .base import BaseResourcesController
 
 
-class LightController(BaseResourcesController[light.Light]):
+class LightController(BaseResourcesController[Light]):
     """Controller holding and managing Hubspace resources of type `light`."""
 
     ITEM_TYPE_ID = ResourceTypes.DEVICE
     ITEM_TYPES = [ResourceTypes.LIGHT]
-    ITEM_CLS = light.Light
+    ITEM_CLS = Light
     ITEM_MAPPING = {
         "color": "color-rgb",
         "color_mode": "color-mode",
@@ -52,7 +53,7 @@ class LightController(BaseResourcesController[light.Light]):
         """Set effect of the light. Turn on light if it's currently off."""
         await self.set_state(device_id, on=True, effect=effect, color_mode="sequence")
 
-    async def initialize_elem(self, hs_device: HubspaceDevice) -> None:
+    async def initialize_elem(self, hs_device: HubspaceDevice) -> Light:
         """Initialize the element"""
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
@@ -104,7 +105,7 @@ class LightController(BaseResourcesController[light.Light]):
             elif state.functionClass == "available":
                 available = state.value
 
-        self._items[hs_device.id] = light.Light(
+        self._items[hs_device.id] = Light(
             hs_device.functions,
             id=hs_device.id,
             available=available,
@@ -124,6 +125,7 @@ class LightController(BaseResourcesController[light.Light]):
             color=color,
             effect=effect,
         )
+        return self._items[hs_device.id]
 
     async def update_elem(self, hs_device: HubspaceDevice) -> None:
         cur_item = self.get_device(hs_device.id)
@@ -173,7 +175,7 @@ class LightController(BaseResourcesController[light.Light]):
         effect: str | None = None,
     ) -> None:
         """Set supported feature(s) to fan resource."""
-        update_obj = light.LightPut()
+        update_obj = LightPut()
         cur_item = self.get_device(device_id)
         if on is not None:
             update_obj.on = features.OnFeature(
