@@ -45,46 +45,44 @@ class HubspaceDevice:
         return hash((self.id, self.friendly_name))
 
     def __post_init__(self):
-        if not self.model and self.default_image == "ceiling-fan-snyder-park-icon":
-            self.model = "DriskolFan"
-        elif not self.model and self.default_image == "ceiling-fan-vinings-icon":
-            self.model = "VinwoodFan"
-        elif (
-            self.device_class == "fan"
-            and self.model == "TBD"
-            and self.default_image == "ceiling-fan-chandra-icon"
-        ):
-            self.model = "ZandraFan"
-        elif (
-            self.model == "TBD"
-            and self.default_image == "ceiling-fan-ac-cct-dardanus-icon"
-        ):
-            self.model = "NevaliFan"
-        elif (
-            self.device_class == "fan"
-            and not self.model
-            and self.default_image == "ceiling-fan-slender-icon"
-        ):
-            self.model = "TagerFan"
-        elif self.model == "Smart Stake Timer":
-            self.model = "YardStake"
-        elif self.default_image == "a19-e26-color-cct-60w-smd-frosted-icon":
-            self.model = "12A19060WRGBWH2"
-        elif (
-            self.device_class == "switch" and self.default_image == "slide-dimmer-icon"
-        ):
-            self.model = "HPDA110NWBP"
         # Dimmer Switch fix - A switch cannot dim, but a light can
-        elif self.device_class == "switch" and any(
+        if self.device_class == "switch" and any(
             [state.functionClass == "brightness" for state in self.states]
         ):
             self.device_class = "light"
-        elif (
-            self.device_class == "switch"
-            and self.default_image == "smart-switch-icon"
-            and self.model == "TBD"
-        ):
-            self.model = "HPSA11CWB"
+        # Fix fans
+        if self.device_class in ["fan", "ceiling-fan"]:
+            if not self.model and self.default_image == "ceiling-fan-snyder-park-icon":
+                self.model = "Driskol"
+            elif not self.model and self.default_image == "ceiling-fan-vinings-icon":
+                self.model = "Vinwood"
+            elif (
+                self.model == "TBD" and self.default_image == "ceiling-fan-chandra-icon"
+            ):
+                self.model = "Zandra"
+            elif (
+                self.model == "TBD"
+                and self.default_image == "ceiling-fan-ac-cct-dardanus-icon"
+            ):
+                self.model = "Nevali"
+            elif not self.model and self.default_image == "ceiling-fan-slender-icon":
+                self.model = "Tager"
+        # Fix lights
+        elif self.device_class == "light":
+            if self.default_image == "a19-e26-color-cct-60w-smd-frosted-icon":
+                self.model = "12A19060WRGBWH2"
+            elif self.default_image == "slide-dimmer-icon":
+                self.model = "HPDA110NWBP"
+        # Fix locks
+        elif self.device_class == "lock":
+            pass
+        # Fix switches
+        elif self.device_class == "switch":
+            if self.default_image == "smart-switch-icon" and self.model == "TBD":
+                self.model = "HPSA11CWB"
+        # Fix valves
+        elif self.device_class == "valve":
+            pass
 
 
 def get_hs_device(hs_device: dict[str, Any]) -> HubspaceDevice:

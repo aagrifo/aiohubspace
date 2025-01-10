@@ -2,7 +2,7 @@
     {
         "id": "066c0e38-c49b-4f60-b805-486dc07cab74",
         "device_id": "2a3572cb-3fbf-4094-846e-f2ebcb10521a",
-        "model": "ZandraFan",
+        "model": "TBD",
         "device_class": "fan",
         "default_name": "Ceiling Fan",
         "default_image": "ceiling-fan-chandra-icon",

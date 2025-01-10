@@ -38,6 +38,7 @@ async def test_initialize_zandra(mocked_controller):
         ],
     )
     assert dev.direction == features.DirectionFeature(forward=False)
+    assert dev.device_information.model == "Zandra"
 
 
 @pytest.mark.asyncio

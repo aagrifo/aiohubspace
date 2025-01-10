@@ -128,13 +128,13 @@ class BaseResourcesController(Generic[HubspaceResource]):
                     continue
                 valid_devices.append(device)
 
-        for item in valid_devices:
+        for device in valid_devices:
             await self._handle_event(
                 EventType.RESOURCE_ADDED,
                 HubspaceEvent(
                     type=EventType.RESOURCE_ADDED,
-                    device_id=item.device_id,
-                    device=item,
+                    device_id=device.device_id,
+                    device=device,
                 ),
             )
         # subscribe to item updates
