@@ -191,19 +191,23 @@ class HubspaceBridgeV1:
 
     async def get_account_id(self) -> str:
         """Lookup the account ID associated with the login"""
-        self.logger.debug("Querying API for account id")
-        headers = {"host": "api2.afero.net"}
-        res = await self.request(
-            "GET", v1_const.HUBSPACE_ACCOUNT_ID_URL, headers=headers
-        )
-        return (
-            (await res.json()).get("accountAccess")[0].get("account").get("accountId")
-        )
+        if not self._account_id:
+            self.logger.debug("Querying API for account id")
+            headers = {"host": "api2.afero.net"}
+            res = await self.request(
+                "GET", v1_const.HUBSPACE_ACCOUNT_ID_URL, headers=headers
+            )
+            self._account_id = (
+                (await res.json())
+                .get("accountAccess")[0]
+                .get("account")
+                .get("accountId")
+            )
+        return self._account_id
 
     async def initialize(self) -> None:
         """Query Hubspace API for all data"""
-        if not self._account_id:
-            self._account_id = await self.get_account_id()
+        await self.get_account_id()
         hs_data = await self.fetch_data()
         await asyncio.gather(
             *[
