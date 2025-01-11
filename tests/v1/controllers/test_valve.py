@@ -113,7 +113,8 @@ async def test_update_elem(mocked_controller):
     ]
     for state in new_states:
         utils.modify_state(dev_update, state)
-    await mocked_controller.update_elem(dev_update)
+    updates = await mocked_controller.update_elem(dev_update)
     dev = mocked_controller.items[0]
     assert dev.open["spigot-1"].open is True
     assert dev.open["spigot-2"].open is False
+    assert updates == {"open"}

@@ -57,13 +57,22 @@ class LockController(BaseResourcesController[Lock]):
         )
         return self._items[hs_device.id]
 
-    async def update_elem(self, hs_device: HubspaceDevice) -> None:
+    async def update_elem(self, hs_device: HubspaceDevice) -> set:
         cur_item = self.get_device(hs_device.id)
+        updated_keys = set()
         for state in hs_device.states:
             if state.functionClass == "lock-control":
-                cur_item.position.position = features.CurrentPositionEnum(state.value)
+                new_val = features.CurrentPositionEnum(state.value)
+                if cur_item.position.position != new_val:
+                    cur_item.position.position = features.CurrentPositionEnum(
+                        state.value
+                    )
+                    updated_keys.add("position")
             elif state.functionClass == "available":
-                cur_item.available = state.value
+                if cur_item.available != state.value:
+                    cur_item.available = state.value
+                    updated_keys.add("available")
+        return updated_keys
 
     async def set_state(
         self,

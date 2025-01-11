@@ -59,13 +59,20 @@ class ValveController(BaseResourcesController[Valve]):
         )
         return self._items[hs_device.id]
 
-    async def update_elem(self, hs_device: HubspaceDevice) -> None:
+    async def update_elem(self, hs_device: HubspaceDevice) -> set:
         cur_item = self.get_device(hs_device.id)
+        updated_keys = set()
         for state in hs_device.states:
             if state.functionClass in ["power", "toggle"]:
-                cur_item.open[state.functionInstance].open = state.value == "on"
+                new_state = state.value == "on"
+                if cur_item.open[state.functionInstance].open != new_state:
+                    cur_item.open[state.functionInstance].open = new_state
+                    updated_keys.add("open")
             elif state.functionClass == "available":
-                cur_item.available = state.value
+                if cur_item.available != state.value:
+                    cur_item.available = state.value
+                    updated_keys.add("available")
+        return updated_keys
 
     async def set_state(
         self,

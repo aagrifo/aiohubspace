@@ -127,29 +127,52 @@ class LightController(BaseResourcesController[Light]):
         )
         return self._items[hs_device.id]
 
-    async def update_elem(self, hs_device: HubspaceDevice) -> None:
+    async def update_elem(self, hs_device: HubspaceDevice) -> set:
         cur_item = self.get_device(hs_device.id)
+        updated_keys = set()
         color_seq_states: dict[str, HubspaceState] = {}
         for state in hs_device.states:
             if state.functionClass == "power":
-                cur_item.on.on = state.value == "on"
+                new_val = state.value == "on"
+                if cur_item.on.on != new_val:
+                    cur_item.on.on = new_val
+                    updated_keys.add("on")
             elif state.functionClass == "color-temperature":
                 current_temp = state.value
                 if isinstance(current_temp, str) and current_temp.endswith("K"):
                     current_temp = current_temp[:-1]
-                cur_item.color_temperature.temperature = int(current_temp)
+                new_val = int(current_temp)
+                if cur_item.color_temperature.temperature != new_val:
+                    cur_item.color_temperature.temperature = new_val
+                    updated_keys.add("color_temperature")
             elif state.functionClass == "brightness":
-                cur_item.dimming.brightness = int(state.value)
+                new_val = int(state.value)
+                if cur_item.dimming.brightness != new_val:
+                    cur_item.dimming.brightness = int(state.value)
+                    updated_keys.add("dimming")
             elif state.functionClass == "color-sequence":
                 color_seq_states[state.functionInstance] = state
             elif state.functionClass == "color-rgb":
-                cur_item.color.red = state.value["color-rgb"].get("r", 0)
-                cur_item.color.green = state.value["color-rgb"].get("g", 0)
-                cur_item.color.blue = state.value["color-rgb"].get("b", 0)
+                color_red = state.value["color-rgb"].get("r", 0)
+                color_green = state.value["color-rgb"].get("g", 0)
+                color_blue = state.value["color-rgb"].get("b", 0)
+                if (
+                    cur_item.color.red != color_red
+                    or cur_item.color.green != color_green
+                    or cur_item.color.blue != color_blue
+                ):
+                    cur_item.color.red = color_red
+                    cur_item.color.green = color_green
+                    cur_item.color.blue = color_blue
+                    updated_keys.add("color")
             elif state.functionClass == "color-mode":
-                cur_item.color_mode.mode = state.value
+                if cur_item.color_mode.mode != state.value:
+                    cur_item.color_mode.mode = state.value
+                    updated_keys.add("color_mode")
             elif state.functionClass == "available":
-                cur_item.available = state.value
+                if cur_item.available != state.value:
+                    cur_item.available = state.value
+                    updated_keys.add("available")
         # Several states hold the effect, but its always derived from the preset functionInstance
         if color_seq_states:
             preset_val = (
@@ -158,11 +181,17 @@ class LightController(BaseResourcesController[Light]):
                 else None
             )
             if preset_val and cur_item.effect.is_preset(preset_val):
-                cur_item.effect.effect = preset_val
+                if cur_item.effect.effect != preset_val:
+                    cur_item.effect.effect = preset_val
+                    updated_keys.add("effect")
             elif preset_val:
-                cur_item.effect.effect = color_seq_states[
-                    color_seq_states["preset"].value
-                ].value
+                new_val = color_seq_states[color_seq_states["preset"].value].value
+                if cur_item.effect.effect != new_val:
+                    cur_item.effect.effect = color_seq_states[
+                        color_seq_states["preset"].value
+                    ].value
+                    updated_keys.add("effect")
+        return updated_keys
 
     async def set_state(
         self,

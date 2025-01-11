@@ -85,8 +85,8 @@ class BaseResourcesController(Generic[HubspaceResource]):
                 cur_item = None
             if cur_item is None:
                 return
-            # @TODO - Check for changes rather than issuing a full update for everything each time
-            await self.update_elem(evt_data["device"])
+            if not await self.update_elem(evt_data["device"]):
+                return
         else:
             # Skip all other events
             return

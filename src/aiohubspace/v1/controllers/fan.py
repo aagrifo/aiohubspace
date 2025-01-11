@@ -100,21 +100,37 @@ class FanController(BaseResourcesController[Fan]):
         )
         return self._items[hs_device.id]
 
-    async def update_elem(self, hs_device: HubspaceDevice) -> None:
+    async def update_elem(self, hs_device: HubspaceDevice) -> set:
+        updated_keys = set()
         cur_item = self.get_device(hs_device.id)
         for state in hs_device.states:
             if state.functionClass == "power":
-                cur_item.on.on = state.value == "on"
+                new_val = state.value == "on"
+                if cur_item.on.on != new_val:
+                    cur_item.on.on = new_val
+                    updated_keys.add("on")
             elif state.functionClass == "fan-speed":
-                cur_item.speed.speed = ordered_list_item_to_percentage(
+                new_val = ordered_list_item_to_percentage(
                     cur_item.speed.speeds, state.value
                 )
+                if cur_item.speed.speed != new_val:
+                    cur_item.speed.speed = new_val
+                    updated_keys.add("speed")
             elif state.functionClass == "fan-reverse":
-                cur_item.direction.forward = state.value == "forward"
+                new_val = state.value == "forward"
+                if cur_item.direction.forward != new_val:
+                    cur_item.direction.forward = new_val
+                    updated_keys.add("direction")
             elif state.functionClass == "toggle":
-                cur_item.preset.enabled = state.value == "on"
+                new_val = state.value == "on"
+                if cur_item.preset.enabled != new_val:
+                    cur_item.preset.enabled = new_val
+                    updated_keys.add("preset")
             elif state.functionClass == "available":
-                cur_item.available = state.value
+                if cur_item.available != state.value:
+                    cur_item.available = state.value
+                    updated_keys.add("available")
+        return updated_keys
 
     async def set_state(
         self,

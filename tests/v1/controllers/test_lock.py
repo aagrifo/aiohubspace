@@ -66,14 +66,14 @@ async def test_unlock(mocked_controller):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "value, expected",
+    "value, expected, expected_updates",
     [
-        ("locking", features.CurrentPositionEnum.LOCKING),
-        ("unlocking", features.CurrentPositionEnum.UNLOCKING),
-        ("not-a-state", features.CurrentPositionEnum.UNKNOWN),
+        ("locking", features.CurrentPositionEnum.LOCKING, {"position"}),
+        ("unlocking", features.CurrentPositionEnum.UNLOCKING, {"position"}),
+        ("not-a-state", features.CurrentPositionEnum.UNKNOWN, {"position"}),
     ],
 )
-async def test_update_elem(value, expected, mocked_controller):
+async def test_update_elem(value, expected, expected_updates, mocked_controller):
     await mocked_controller.initialize_elem(lock)
     assert len(mocked_controller.items) == 1
     dev_update = utils.create_devices_from_data("door-lock-TBD.json")[0]
@@ -89,6 +89,7 @@ async def test_update_elem(value, expected, mocked_controller):
     ]
     for state in new_states:
         utils.modify_state(dev_update, state)
-    await mocked_controller.update_elem(dev_update)
+    updates = await mocked_controller.update_elem(dev_update)
     dev = mocked_controller.items[0]
     assert dev.position.position == expected
+    assert updates == expected_updates

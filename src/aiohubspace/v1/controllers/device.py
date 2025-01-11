@@ -95,17 +95,25 @@ class DeviceController(BaseResourcesController[Device]):
                 parents[device.device_id] = device
         return list(parents.values())
 
-    async def update_elem(self, hs_device: HubspaceDevice) -> None:
+    async def update_elem(self, hs_device: HubspaceDevice) -> set:
         cur_item = self.get_device(hs_device.id)
+        updated_keys = set()
         for state in hs_device.states:
             if state.functionClass == "available":
-                cur_item.available = state.value
+                if cur_item.available != state.value:
+                    cur_item.available = state.value
+                    updated_keys.add(state.functionClass)
             elif state.functionClass in sensor.MAPPED_SENSORS:
-                cur_item.sensors[state.functionClass].value = state.value
+                if cur_item.sensors[state.functionClass].value != state.value:
+                    cur_item.sensors[state.functionClass].value = state.value
+                    updated_keys.add(f"sensor-{state.functionClass}")
             elif state.functionClass in sensor.BINARY_SENSORS:
                 value, _ = split_sensor_data(state)
                 key = f"{state.functionClass}|{state.functionInstance}"
-                cur_item.binary_sensors[key].value = value
+                if cur_item.binary_sensors[key].value != value:
+                    cur_item.binary_sensors[key].value = value
+                    updated_keys.add(f"binary-{key}")
+        return updated_keys
 
 
 def split_sensor_data(state: HubspaceState) -> tuple[Any, str | None]:

@@ -179,10 +179,11 @@ async def test_update_elem(mocked_controller):
     ]
     for state in new_states:
         utils.modify_state(dev_update, state)
-    await mocked_controller.update_elem(dev_update)
+    updates = await mocked_controller.update_elem(dev_update)
     dev = mocked_controller.items[0]
     assert dev.on["zone-1"].on is True
     assert dev.on["zone-2"].on is False
+    assert updates == {"on"}
 
 
 @pytest.mark.asyncio

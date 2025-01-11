@@ -509,7 +509,7 @@ async def test_update_elem(mocked_controller):
     ]
     for state in new_states:
         utils.modify_state(dev_update, state)
-    await mocked_controller.update_elem(dev_update)
+    updates = await mocked_controller.update_elem(dev_update)
     dev = mocked_controller.items[0]
     assert dev.on.on is True
     assert dev.color_temperature.temperature == 3000
@@ -518,6 +518,7 @@ async def test_update_elem(mocked_controller):
     assert dev.color.green == 3
     assert dev.color.blue == 4
     assert dev.color_mode.mode == "color"
+    assert updates == {"on", "color_temperature", "dimming", "color", "color_mode"}
 
 
 states_custom = [

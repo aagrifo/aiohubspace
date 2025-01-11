@@ -137,9 +137,10 @@ async def test_update_elem_sensor(mocked_controller):
         value=40,
     )
     utils.modify_state(dev_update, rssi)
-    await mocked_controller.update_elem(dev_update)
+    updates = await mocked_controller.update_elem(dev_update)
     assert dev.available is False
     assert dev.sensors["wifi-rssi"].value == 40
+    assert updates == {"available", "sensor-wifi-rssi"}
 
 
 @pytest.mark.asyncio
@@ -155,8 +156,9 @@ async def test_update_elem_binary_sensor(mocked_controller):
         value="alerting",
     )
     utils.modify_state(dev_update, temp_sensor_failure)
-    await mocked_controller.update_elem(dev_update)
+    updates = await mocked_controller.update_elem(dev_update)
     assert dev.binary_sensors["error|temperature-sensor-failure"].value == "alerting"
+    assert updates == {"binary-error|temperature-sensor-failure"}
 
 
 @pytest.mark.parametrize(
