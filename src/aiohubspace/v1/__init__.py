@@ -43,7 +43,6 @@ class HubspaceBridgeV1:
         self._auth = HubspaceAuth(username, password)
         self.logger = logging.getLogger(f"{__package__}[{username}]")
         self.logger.addHandler(logging.StreamHandler())
-        self.logger.setLevel(logging.DEBUG)
         self._known_devs: set[str] = set()
         self._known_dev_classes = {}
         # Data Updater
