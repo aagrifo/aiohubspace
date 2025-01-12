@@ -96,4 +96,4 @@ class SwitchController(BaseResourcesController[Switch]):
                 )
             except KeyError:
                 self._logger.info("Unable to find instance %s", instance)
-        await self.update(device_id, update_obj)
+        await self.update(device_id, obj_in=update_obj)

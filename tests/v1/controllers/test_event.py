@@ -57,10 +57,19 @@ async def test_event_reader_dev_add(bridge, mocker):
 
 
 @pytest.mark.asyncio
+async def test_add_job(bridge, mocker):
+    stream = bridge.events
+    await stream.stop()
+    stream.add_job(None)
+    assert stream._event_queue.qsize() == 1
+
+
+@pytest.mark.asyncio
 async def test_event_reader_dev_update(bridge, mocker):
     stream = bridge.events
     bridge.lights.initialize({})
     await bridge.lights.initialize_elem(a21_light)
+    bridge.add_device(a21_light.id, bridge.lights)
     await stream.stop()
 
     def hs_dev(dev):
@@ -92,7 +101,8 @@ async def test_event_reader_dev_update(bridge, mocker):
 async def test_event_reader_dev_delete(bridge, mocker):
     stream = bridge.events
     bridge.lights.initialize({})
-    await bridge.lights.initialize_elem(a21_light)
+    bridge.lights.initialize_elem(a21_light)
+    bridge.add_device(a21_light.id, bridge.lights)
     await stream.stop()
 
     def hs_dev(dev):

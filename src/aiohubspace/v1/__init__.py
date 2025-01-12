@@ -13,9 +13,16 @@ from typing import Any, Callable, Generator, Optional
 import aiohttp
 from aiohttp import web_exceptions
 
-from ..errors import ExceededMaximumRetries, HubspaceError, InvalidAuth, InvalidResponse
+from ..errors import (
+    DeviceNotFound,
+    ExceededMaximumRetries,
+    HubspaceError,
+    InvalidAuth,
+    InvalidResponse,
+)
 from . import v1_const
 from .auth import HubspaceAuth
+from .controllers.base import BaseResourcesController, HubspaceResource
 from .controllers.device import DeviceController
 from .controllers.event import EventCallBackType, EventStream
 from .controllers.fan import FanController
@@ -43,8 +50,7 @@ class HubspaceBridgeV1:
         self._auth = HubspaceAuth(username, password)
         self.logger = logging.getLogger(f"{__package__}[{username}]")
         self.logger.addHandler(logging.StreamHandler())
-        self._known_devs: set[str] = set()
-        self._known_dev_classes = {}
+        self._known_devs: dict[str, BaseResourcesController] = {}
         # Data Updater
         self._events: EventStream = EventStream(self, polling_interval)
         # Data Controllerse
@@ -124,35 +130,16 @@ class HubspaceBridgeV1:
 
     @property
     def tracked_devices(self) -> set:
-        if not self._known_devs:
-            for controller in self.controllers:
-                for device in controller.items:
-                    self._known_devs.add(device.id)
-        return self._known_devs
+        return set(self._known_devs.keys())
 
-    @property
-    def tracked_device_classes(self) -> set:
-        dev_classes = set()
-        for tracked_dc in self.device_classes.values():
-            for cls in tracked_dc:
-                dev_classes.add(cls)
-        return dev_classes
-
-    @property
-    def device_classes(self) -> dict[str, list[str]]:
-        if not self._known_dev_classes:
-            for controller in self.controllers:
-                self._known_dev_classes[controller.ITEM_CLS] = []
-                for cls in controller.ITEM_TYPES:
-                    self._known_dev_classes[controller.ITEM_CLS].append(cls.value)
-        return self._known_dev_classes
-
-    def add_device(self, device_id: str) -> None:
-        self._known_devs.add(device_id)
+    def add_device(
+        self, device_id: str, controller: BaseResourcesController[HubspaceResource]
+    ) -> None:
+        self._known_devs[device_id] = controller
 
     def remove_device(self, device_id: str) -> None:
         with contextlib.suppress(KeyError):
-            self._known_devs.remove(device_id)
+            self._known_devs.pop(device_id)
 
     @property
     def account_id(self) -> str:
@@ -280,6 +267,17 @@ class HubspaceBridgeV1:
                 await resp.read()
                 return resp
         raise ExceededMaximumRetries("Exceeded maximum number of retries")
+
+    async def send_service_request(self, device_id: str, states: list[dict[str, Any]]):
+        """Manually send state requests to Hubspace
+
+        :param device_id: ID for the device
+        :param states: List of states to send
+        """
+        controller = self._known_devs.get(device_id)
+        if not controller:
+            raise DeviceNotFound(f"Unable to find device {device_id}")
+        await controller.update(device_id, states=states)
 
 
 def get_headers(**kwargs):

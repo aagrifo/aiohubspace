@@ -249,3 +249,21 @@ async def test_update_elem(mocked_controller):
     assert dev.direction.forward is True
     assert dev.on.on is False
     assert updates == {"speed", "direction", "on"}
+
+
+# @TODO - Create tests for BaseResourcesController
+@pytest.mark.asyncio
+async def test_update(mocked_controller):
+    await mocked_controller.initialize_elem(zandra_fan)
+    assert len(mocked_controller.items) == 1
+    dev = mocked_controller.items[0]
+    assert dev.on.on is True
+    manual_update = [
+        {
+            "functionClass": "power",
+            "value": "off",
+            "functionInstance": "fan-power",
+        }
+    ]
+    await mocked_controller.update(zandra_fan.id, states=manual_update)
+    assert dev.on.on is False

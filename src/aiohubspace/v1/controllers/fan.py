@@ -160,4 +160,4 @@ class FanController(BaseResourcesController[Fan]):
             )
         if forward is not None:
             update_obj.direction = features.DirectionFeature(forward=forward)
-        await self.update(device_id, update_obj)
+        await self.update(device_id, obj_in=update_obj)

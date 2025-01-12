@@ -1,4 +1,4 @@
-"""Handle connecting to the HUE Eventstream and distribute events."""
+"""Handle connecting to Hubspace and distribute events."""
 
 import asyncio
 from asyncio.coroutines import iscoroutinefunction
@@ -26,7 +26,6 @@ class EventStreamStatus(Enum):
 class EventType(Enum):
     """Enum with possible Events."""
 
-    # resource events match those emitted by Hue eventstream
     RESOURCE_ADDED = "add"
     RESOURCE_UPDATED = "update"
     RESOURCE_DELETED = "delete"
@@ -37,11 +36,12 @@ class EventType(Enum):
 
 
 class HubspaceEvent(TypedDict):
-    """Hue Event message as emitted by the EventStream."""
+    """Hubspace Event message as emitted by the EventStream."""
 
     type: EventType  # = EventType (add, update, delete)
     device_id: str  # ID for interacting with the device
     device: NotRequired[HubspaceDevice]  # Hubspace Device
+    force_forward: bool
 
 
 EventCallBackType = Callable[[EventType, dict | None], None]
@@ -53,7 +53,6 @@ EventSubscriptionType = tuple[
 
 
 class EventStream:
-    """Holds the connection to the HUE Clip EventStream."""
 
     def __init__(self, bridge: "HubspaceBridgeV1", polling_interval: int) -> None:
         """Initialize instance."""
@@ -130,6 +129,10 @@ class EventStream:
 
         self._subscribers.append(subscription)
         return unsubscribe
+
+    def add_job(self, event: HubspaceEvent) -> None:
+        """Manually add a job to be processed."""
+        self._event_queue.put_nowait(event)
 
     def emit(self, event_type: EventType, data: HubspaceEvent = None) -> None:
         """Emit event to all listeners."""

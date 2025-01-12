@@ -3,12 +3,13 @@ import copy
 import time
 from asyncio.coroutines import iscoroutinefunction
 from dataclasses import dataclass, fields
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Callable, Generic, Iterator, TypeVar
 
 from aiohubspace.errors import DeviceNotFound, ExceededMaximumRetries
 
 from .. import v1_const
-from ..device import HubspaceDevice, get_hs_device
+from ..device import HubspaceDevice, HubspaceState, get_hs_device
 from ..models.resource import ResourceTypes
 from .event import EventCallBackType, EventType, HubspaceEvent
 
@@ -73,7 +74,7 @@ class BaseResourcesController(Generic[HubspaceResource]):
         item_id = evt_data.get("device_id", None)
         if evt_type == EventType.RESOURCE_ADDED:
             cur_item = await self.initialize_elem(evt_data["device"])
-            self._bridge.add_device(evt_data["device"].id)
+            self._bridge.add_device(evt_data["device"].id, self)
         elif evt_type == EventType.RESOURCE_DELETED:
             cur_item = self._items.pop(item_id, evt_data)
             self._bridge.remove_device(evt_data["device_id"])
@@ -85,7 +86,9 @@ class BaseResourcesController(Generic[HubspaceResource]):
                 cur_item = None
             if cur_item is None:
                 return
-            if not await self.update_elem(evt_data["device"]):
+            if not await self.update_elem(evt_data["device"]) and not evt_data.get(
+                "force_forward", False
+            ):
                 return
         else:
             # Skip all other events
@@ -201,26 +204,63 @@ class BaseResourcesController(Generic[HubspaceResource]):
     async def update(
         self,
         device_id: str,
-        obj_in: Generic[HubspaceResource],
+        obj_in: Generic[HubspaceResource] = None,
+        states: list[dict] | None = None,
     ) -> None:
         """Update Hubspace with the new data
 
         :param device_id: Hubspace Device ID
         :param obj_in: Hubspace Resource elements to change
+        :param states: States to manually set
         """
         cur_item = self._items.get(device_id)
-        if cur_item is None:
-            return
-        hs_states = dataclass_to_hs(cur_item, obj_in, self.ITEM_MAPPING)
-        if not hs_states:
-            self._logger.debug("No states to send. Skipping")
-            return
-        # Make a clone if the update fails
-        fallback = copy.deepcopy(cur_item)
-        # Update the state of the item to match the new states
-        update_dataclass(cur_item, obj_in)
         # If the update fails, restore the old states
         fallback_required: bool = False
+        # Make a clone if the update fails
+        fallback = copy.deepcopy(cur_item)
+        if cur_item is None:
+            return
+        if obj_in:
+            hs_states = dataclass_to_hs(cur_item, obj_in, self.ITEM_MAPPING)
+            if not hs_states:
+                self._logger.debug("No states to send. Skipping")
+                return
+            # Update the state of the item to match the new states
+            update_dataclass(cur_item, obj_in)
+        else:
+            hs_states = states
+            hs_dev_states = []
+            for state in states:
+                hs_dev_states.append(
+                    HubspaceState(
+                        functionClass=state["functionClass"],
+                        value=state["value"],
+                        functionInstance=state.get("functionInstance"),
+                        lastUpdateTime=int(
+                            datetime.now(timezone.utc).timestamp() * 1000
+                        ),
+                    )
+                )
+            dummy_hs_update = HubspaceDevice(
+                id=device_id,
+                device_id=cur_item.device_information.parent_id,
+                model=cur_item.device_information.model,
+                device_class=cur_item.device_information.device_class,
+                default_image=cur_item.device_information.default_image,
+                default_name=cur_item.device_information.default_name,
+                friendly_name=cur_item.device_information.name,
+                states=hs_dev_states,
+            )
+            # Update now, but also trigger all chained updates
+            await self.update_elem(dummy_hs_update)
+            self._bridge.events.add_job(
+                HubspaceEvent(
+                    type=EventType.RESOURCE_UPDATED,
+                    device_id=device_id,
+                    device=dummy_hs_update,
+                    force_forward=True,
+                )
+            )
         # @TODO - Implement bluetooth logic for update
         if True:
             url = v1_const.HUBSPACE_DEVICE_STATE.format(

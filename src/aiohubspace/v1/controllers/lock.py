@@ -85,4 +85,4 @@ class LockController(BaseResourcesController[Lock]):
             update_obj.position = features.CurrentPositionFeature(
                 position=lock_position
             )
-        await self.update(device_id, update_obj)
+        await self.update(device_id, obj_in=update_obj)

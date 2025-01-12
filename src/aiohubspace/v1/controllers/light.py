@@ -236,7 +236,7 @@ class LightController(BaseResourcesController[Light]):
             update_obj.effect = features.EffectFeature(
                 effect=effect, effects=cur_item.effect.effects
             )
-        await self.update(device_id, update_obj)
+        await self.update(device_id, obj_in=update_obj)
 
 
 def process_color_temps(color_temps: dict) -> list[int]:
