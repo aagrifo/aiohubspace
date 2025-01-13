@@ -145,19 +145,19 @@ class FanController(BaseResourcesController[Fan]):
         cur_item = self.get_device(device_id)
         if on is not None:
             update_obj.on = features.OnFeature(on=on)
-        if speed is not None:
+        if speed is not None and cur_item.speed is not None:
             if speed == 0:
                 update_obj.on = features.OnFeature(on=False)
             else:
                 update_obj.speed = features.SpeedFeature(
                     speed=speed, speeds=cur_item.speed.speeds
                 )
-        if preset is not None:
+        if preset is not None and cur_item.preset is not None:
             update_obj.preset = features.PresetFeature(
                 enabled=preset,
                 func_class=cur_item.preset.func_class,
                 func_instance=cur_item.preset.func_instance,
             )
-        if forward is not None:
+        if forward is not None and cur_item.direction is not None:
             update_obj.direction = features.DirectionFeature(forward=forward)
         await self.update(device_id, obj_in=update_obj)

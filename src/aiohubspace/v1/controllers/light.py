@@ -212,7 +212,7 @@ class LightController(BaseResourcesController[Light]):
                 func_class=cur_item.on.func_class,
                 func_instance=cur_item.on.func_instance,
             )
-        if temperature is not None:
+        if temperature is not None and cur_item.color_temperature is not None:
             adjusted_temp = min(
                 cur_item.color_temperature.supported,
                 key=lambda x: abs(x - temperature),
@@ -222,17 +222,17 @@ class LightController(BaseResourcesController[Light]):
                 supported=cur_item.color_temperature.supported,
                 prefix=cur_item.color_temperature.prefix,
             )
-        if brightness is not None:
+        if brightness is not None and cur_item.dimming is not None:
             update_obj.dimming = features.DimmingFeature(
                 brightness=brightness, supported=cur_item.dimming.supported
             )
-        if color is not None:
+        if color is not None and cur_item.color is not None:
             update_obj.color = features.ColorFeature(
                 red=color[0], green=color[1], blue=color[2]
             )
-        if color_mode is not None:
+        if color_mode is not None and cur_item.color_mode is not None:
             update_obj.color_mode = features.ColorModeFeature(mode=color_mode)
-        if effect is not None:
+        if effect is not None and cur_item.effect is not None:
             update_obj.effect = features.EffectFeature(
                 effect=effect, effects=cur_item.effect.effects
             )
