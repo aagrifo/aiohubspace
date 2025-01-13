@@ -50,6 +50,10 @@ class HubspaceDevice:
             [state.functionClass == "brightness" for state in self.states]
         ):
             self.device_class = "light"
+        # Fix exhaust fans
+        if self.device_class == "exhaust-fan":
+            if self.default_image == "fan-exhaust-icon":
+                self.model = "BF1112"
         # Fix fans
         if self.device_class in ["fan", "ceiling-fan"]:
             if not self.model and self.default_image == "ceiling-fan-snyder-park-icon":
