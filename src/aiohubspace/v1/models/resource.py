@@ -22,6 +22,7 @@ class ResourceTypes(Enum):
     SWITCH = "switch"
     UNKNOWN = "unknown"
     WATER_TIMER = "water-timer"
+    GLASS_DOOR = "glass-door"
 
     @classmethod
     def _missing_(cls: type, value: object):  # noqa: ARG003

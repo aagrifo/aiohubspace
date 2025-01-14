@@ -19,6 +19,7 @@ class SwitchController(BaseResourcesController[Switch]):
         ResourceTypes.SWITCH,
         ResourceTypes.POWER_OUTLET,
         ResourceTypes.LANDSCAPE_TRANSFORMER,
+        ResourceTypes.GLASS_DOOR,
     ]
     ITEM_CLS = Switch
     ITEM_MAPPING = {}
