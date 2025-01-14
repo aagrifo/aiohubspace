@@ -2,7 +2,7 @@ import pytest
 
 from aiohubspace.v1.controllers.device import DeviceController, split_sensor_data
 from aiohubspace.v1.models.resource import DeviceInformation
-from aiohubspace.v1.models.sensor import HubspaceSensor
+from aiohubspace.v1.models.sensor import HubspaceSensor, HubspaceSensorError
 
 from .. import utils
 
@@ -40,7 +40,7 @@ async def test_initialize_a21(mocked_controller):
         "wifi-rssi": HubspaceSensor(
             id="wifi-rssi",
             owner="30a2df8c-109b-42c2-aed6-a6b30c565f8f",
-            value=-50,
+            _value=-50,
             instance=None,
             unit="dB",
         )
@@ -70,34 +70,34 @@ async def test_initialize_binary_sensors(mocked_controller):
         "wifi-rssi": HubspaceSensor(
             id="wifi-rssi",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
-            value=-71,
+            _value=-71,
             instance=None,
             unit="dB",
         )
     }
     assert dev.binary_sensors == {
-        "error|freezer-high-temperature-alert": HubspaceSensor(
+        "error|freezer-high-temperature-alert": HubspaceSensorError(
             id="error|freezer-high-temperature-alert",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
-            value="normal",
+            _value="normal",
             instance="freezer-high-temperature-alert",
         ),
-        "error|fridge-high-temperature-alert": HubspaceSensor(
+        "error|fridge-high-temperature-alert": HubspaceSensorError(
             id="error|fridge-high-temperature-alert",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
-            value="alerting",
+            _value="alerting",
             instance="fridge-high-temperature-alert",
         ),
-        "error|mcu-communication-failure": HubspaceSensor(
+        "error|mcu-communication-failure": HubspaceSensorError(
             id="error|mcu-communication-failure",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
-            value="normal",
+            _value="normal",
             instance="mcu-communication-failure",
         ),
-        "error|temperature-sensor-failure": HubspaceSensor(
+        "error|temperature-sensor-failure": HubspaceSensorError(
             id="error|temperature-sensor-failure",
             owner="596c120d-4e0d-4e33-ae9a-6330dcf2cbb5",
-            value="normal",
+            _value="normal",
             instance="temperature-sensor-failure",
         ),
     }
@@ -157,7 +157,7 @@ async def test_update_elem_binary_sensor(mocked_controller):
     )
     utils.modify_state(dev_update, temp_sensor_failure)
     updates = await mocked_controller.update_elem(dev_update)
-    assert dev.binary_sensors["error|temperature-sensor-failure"].value == "alerting"
+    assert dev.binary_sensors["error|temperature-sensor-failure"].value is True
     assert updates == {"binary-error|temperature-sensor-failure"}
 
 

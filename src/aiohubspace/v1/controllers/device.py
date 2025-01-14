@@ -30,7 +30,9 @@ class DeviceController(BaseResourcesController[Device]):
         self._logger.info("Initializing %s", hs_device.id)
         available: bool = False
         sensors: dict[str, sensor.HubspaceSensor] = {}
-        binary_sensors: dict[str, sensor.HubspaceSensor] = {}
+        binary_sensors: dict[
+            str, sensor.HubspaceSensor | sensor.HubspaceSensorError
+        ] = {}
         wifi_mac: str | None = None
         ble_mac: str | None = None
 
@@ -42,16 +44,21 @@ class DeviceController(BaseResourcesController[Device]):
                 sensors[state.functionClass] = sensor.HubspaceSensor(
                     id=state.functionClass,
                     owner=hs_device.device_id,
-                    value=value,
+                    _value=value,
                     unit=unit,
                 )
             elif state.functionClass in sensor.BINARY_SENSORS:
                 value, unit = split_sensor_data(state)
                 key = f"{state.functionClass}|{state.functionInstance}"
-                binary_sensors[key] = sensor.HubspaceSensor(
+                sensor_class = (
+                    sensor.HubspaceSensorError
+                    if state.functionClass == "error"
+                    else sensor.HubspaceSensor
+                )
+                binary_sensors[key] = sensor_class(
                     id=key,
                     owner=hs_device.device_id,
-                    value=value,
+                    _value=value,
                     unit=unit,
                     instance=state.functionInstance,
                 )
@@ -104,14 +111,14 @@ class DeviceController(BaseResourcesController[Device]):
                     cur_item.available = state.value
                     updated_keys.add(state.functionClass)
             elif state.functionClass in sensor.MAPPED_SENSORS:
-                if cur_item.sensors[state.functionClass].value != state.value:
-                    cur_item.sensors[state.functionClass].value = state.value
+                if cur_item.sensors[state.functionClass]._value != state.value:
+                    cur_item.sensors[state.functionClass]._value = state.value
                     updated_keys.add(f"sensor-{state.functionClass}")
             elif state.functionClass in sensor.BINARY_SENSORS:
                 value, _ = split_sensor_data(state)
                 key = f"{state.functionClass}|{state.functionInstance}"
-                if cur_item.binary_sensors[key].value != value:
-                    cur_item.binary_sensors[key].value = value
+                if cur_item.binary_sensors[key]._value != value:
+                    cur_item.binary_sensors[key]._value = value
                     updated_keys.add(f"binary-{key}")
         return updated_keys
 
